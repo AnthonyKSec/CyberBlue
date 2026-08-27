@@ -1,0 +1,53 @@
+# Secrets / environment files
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# SSH material
+.ssh/
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+
+# VM disks and images
+*.qcow2
+*.qcow
+*.vdi
+*.vmdk
+*.vhd
+*.vhdx
+*.img
+
+# ISO images
+*.iso
+
+# Packet captures
+*.pcap
+*.pcapng
+
+# Memory and crash dumps
+*.dump
+*.dmp
+*.mem
+
+# Logs
+*.log
+logs/
+
+# Temp / backup files
+*.bak
+*.tmp
+tmp/
+temp/
+
+# Editor / OS junk
+*.swp
+*~
+.DS_Store
+Thumbs.db
