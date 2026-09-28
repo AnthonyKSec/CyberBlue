@@ -1,5 +1,7 @@
 # CyberBlue
 
+![CyberBlue Cyber Forge Range Architecture](assets/cyberblue-network-architecture.png)
+
 **CyberBlue** is a hands-on cybersecurity training and portfolio project built around a repeatable cyber range called **Cyber Forge**.
 
 The goal is not to collect tools or screenshots. The goal is to demonstrate the ability to **design, build, validate, troubleshoot, explain, document, and qualify** real security capabilities in a controlled lab environment.
