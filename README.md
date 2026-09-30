@@ -112,8 +112,9 @@ As additional modules are completed, this repository will expand into endpoint t
 | Module | Topic | Status |
 |---|---|---|
 | [Module 02 — Cyber Forge Range Foundation](modules/module-02-range-foundation/README.md) | Proxmox networking, segmentation, VM provisioning, validation, and snapshot recovery | **QUALIFIED ✓** |
+| [Module 03 — Virtual Networking & Segmentation](modules/module-03-virtual-networking-segmentation/README.md) | Layer-3 routing, persistent routes, packet tracing, return-path troubleshooting, and segmentation policy | **IN PROGRESS 🚧** |
 
-More CyberBlue modules will be added as they are completed and validated.
+Module 03 is being documented as it is built so the repository reflects active hands-on work, not only completed modules.
 
 ---
 
@@ -144,6 +145,27 @@ The module includes configuration steps, validation commands, troubleshooting no
 
 ---
 
+## Module 03 — Virtual Networking & Segmentation
+
+Module 03 is currently **in progress** and advances the Cyber Forge from isolated Layer-2 segments to deliberately routed and policy-controlled trust zones.
+
+Work completed so far includes:
+
+```text
+[✓] Dedicated ROUTER-01 VM across vmbr20/vmbr30/vmbr40
+[✓] IPv4 forwarding validated and made persistent
+[✓] Persistent routes on Ubuntu-SOC, WIN11-01, and KALI-01
+[✓] Cross-subnet routing validated
+[✓] Return-path failure diagnosed with tcpdump and Windows PktMon
+[✓] Host-firewall policy behavior validated
+[✓] Pre-policy router baseline captured
+[ ] Stateful nftables segmentation policy — next
+```
+
+**[View the Module 03 work-in-progress documentation →](modules/module-03-virtual-networking-segmentation/README.md)**
+
+---
+
 ## Current Lab Status
 
 ```text
@@ -158,9 +180,13 @@ The module includes configuration steps, validation commands, troubleshooting no
 [✓] Cross-segment isolation validated
 [✓] Snapshot rollback validated
 [✓] Module 02 qualification completed
+[✓] ROUTER-01 deployed across SOC/Victim/Attack networks
+[✓] Persistent inter-subnet routing validated
+[✓] Packet-path troubleshooting completed
+[ ] Stateful router segmentation policy in progress
 ```
 
-The current range is ready to support the next stage of training: **security telemetry and observation**.
+The current range is actively progressing through **Module 03 — Virtual Networking & Segmentation**.
 
 ---
 
