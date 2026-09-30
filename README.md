@@ -112,9 +112,9 @@ As additional modules are completed, this repository will expand into endpoint t
 | Module | Topic | Status |
 |---|---|---|
 | [Module 02 — Cyber Forge Range Foundation](modules/module-02-range-foundation/README.md) | Proxmox networking, segmentation, VM provisioning, validation, and snapshot recovery | **QUALIFIED ✓** |
-| [Module 03 — Virtual Networking & Segmentation](modules/module-03-virtual-networking-segmentation/README.md) | Layer-3 routing, persistent routes, packet tracing, return-path troubleshooting, and segmentation policy | **IN PROGRESS 🚧** |
+| [Module 03 — Virtual Networking & Segmentation](modules/module-03-virtual-networking-segmentation/README.md) | Layer-3 routing, persistent routes, packet tracing, return-path troubleshooting, and segmentation policy | **BUILD COMPLETE ✓** |
 
-Module 03 is being documented as it is built so the repository reflects active hands-on work, not only completed modules.
+Module 03 has completed its technical build gate. Deeper knowledge review is tracked separately and will be revisited after the wider Cyber Forge range is built.
 
 ---
 
@@ -147,7 +147,7 @@ The module includes configuration steps, validation commands, troubleshooting no
 
 ## Module 03 — Virtual Networking & Segmentation
 
-Module 03 is currently **in progress** and advances the Cyber Forge from isolated Layer-2 segments to deliberately routed and policy-controlled trust zones.
+Module 03 has completed its **technical build gate** and advances the Cyber Forge from isolated Layer-2 segments to deliberately routed and policy-controlled trust zones.
 
 Work completed so far includes:
 
@@ -159,10 +159,14 @@ Work completed so far includes:
 [✓] Return-path failure diagnosed with tcpdump and Windows PktMon
 [✓] Host-firewall policy behavior validated
 [✓] Pre-policy router baseline captured
-[ ] Stateful nftables segmentation policy — next
+[✓] Stateful nftables segmentation policy implemented
+[✓] Directional allow/deny matrix validated
+[✓] nftables persistence validated
+[✓] Post-reboot security policy validated
+[ ] Knowledge review — deferred until range build-out
 ```
 
-**[View the Module 03 work-in-progress documentation →](modules/module-03-virtual-networking-segmentation/README.md)**
+**[View Module 03 documentation →](modules/module-03-virtual-networking-segmentation/README.md)**
 
 ---
 
@@ -183,10 +187,10 @@ Work completed so far includes:
 [✓] ROUTER-01 deployed across SOC/Victim/Attack networks
 [✓] Persistent inter-subnet routing validated
 [✓] Packet-path troubleshooting completed
-[ ] Stateful router segmentation policy in progress
+[✓] Stateful router segmentation policy validated
 ```
 
-The current range is actively progressing through **Module 03 — Virtual Networking & Segmentation**.
+The current range has completed the **Module 03 technical build** and is ready to progress to the next Cyber Forge build stage.
 
 ---
 
