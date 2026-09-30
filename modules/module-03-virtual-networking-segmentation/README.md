@@ -1,14 +1,14 @@
 # CyberBlue — Module 03
 ## Virtual Networking & Segmentation
 
-**Status:** IN PROGRESS 🚧  
-**Current checkpoint:** Section 11 — Router Security Policy  
+**Status:** TECHNICAL BUILD COMPLETE ✓  
+**Current checkpoint:** Build Gate complete — Knowledge Review Pending  
 **Platform:** Proxmox VE 9.2.2  
 **Range host:** `pve`  
 **Module focus:** Layer-3 routing, route persistence, return-path troubleshooting, packet tracing, and segmentation policy  
 **Training method:** Principle → Architecture → Build → Validate → Break/Test → Troubleshoot → Restore → Explain → Document → Qualify
 
-> This README is intentionally published while the module is still in progress. It documents validated work completed so far and will continue to evolve until Module 03 reaches its qualification gate.
+> Module 03 has completed its **technical build gate**. The range configuration, validation, troubleshooting, policy enforcement, persistence, and evidence collection are complete. Deeper knowledge review is intentionally deferred until the broader Cyber Forge range is built out.
 
 ---
 
@@ -92,8 +92,10 @@ ROUTER-01 deliberately has **no interface on vmbr0**, keeping the Cyber Forge ro
 [✓] Section 08 — Persistent Router Forwarding
 [✓] Section 09 — Persistent Endpoint Routing
 [✓] Section 10 — Pre-Policy Firewall Baseline
-[ ] Section 11 — Stateful Router Security Policy
-[ ] Remaining policy validation / qualification
+[✓] Section 11 — Stateful Router Security Policy
+[✓] Persistence and post-reboot policy validation
+[✓] Technical Build Gate
+[ ] Knowledge Review — deferred until range build-out
 ```
 
 ---
@@ -512,38 +514,161 @@ Policy decides what SHOULD cross zones
 
 ---
 
-## 11. Next Step — Stateful Router Security Policy
+## 11. Stateful Router Security Policy
 
-**Status: NOT YET COMPLETED**
+**Status: COMPLETE ✓**
 
-The next lab section will move policy enforcement onto ROUTER-01 using `nftables`.
+With routing working and persistent, ROUTER-01 was converted from an unrestricted Layer-3 router into a **stateful policy enforcement point** using `nftables`.
 
-Planned baseline policy:
+### Runtime policy
 
-```text
-SOC → Victim        ALLOW selected traffic
-SOC → Attack        ALLOW selected traffic
+The initial ruleset was created as a runtime-only policy and syntax-checked before deployment.
 
-Victim → SOC        DENY new connections
-Attack → SOC        DENY new connections
-Attack → Victim     DENY new connections
-Victim → Attack     DENY new connections
+```nft
+table inet cyberblue {
+    chain forward {
+        type filter hook forward priority 0; policy drop;
 
-Established/related replies
-                    ALLOW
-Everything else     DROP
+        ct state invalid counter drop
+        ct state established,related counter accept
+
+        iifname "ens18" oifname "ens19" ip saddr 10.10.20.0/24 ip daddr 10.10.30.0/24 icmp type echo-request counter accept
+
+        iifname "ens18" oifname "ens20" ip saddr 10.10.20.0/24 ip daddr 10.10.40.0/24 icmp type echo-request counter accept
+
+        counter drop
+    }
+}
 ```
 
-The purpose is to move from:
+The ruleset was validated with:
 
-```text
-"No route, therefore isolated"
+```bash
+sudo nft -c -f /tmp/cyberblue-policy.nft
 ```
 
-to:
+and then loaded into the running kernel.
+
+![ROUTER-01 runtime nftables policy](screenshots/19-router01-runtime-nftables-policy.png)
+
+### Stateful behavior
+
+The policy permits SOC-initiated ICMP toward the Victim and Attack networks while using conntrack to permit only legitimate return traffic:
 
 ```text
-"A route exists, but policy decides what is authorized."
+ct state established,related accept
+```
+
+This means a Victim or Attack endpoint may reply to a connection that the SOC was authorized to initiate without gaining permission to initiate a new connection back into the SOC zone.
+
+![SOC to Victim allowed](screenshots/20a-soc-to-victim-icmp-pass.png)
+
+![Stateful conntrack counter validation](screenshots/20b-stateful-conntrack-counter-validation.png)
+
+### Directional segmentation validation
+
+The complete policy matrix was tested from both permitted and denied directions:
+
+| Source | Destination | Expected | Result |
+|---|---|---:|---:|
+| SOC | Victim | Allow | **PASS ✓** |
+| SOC | Attack | Allow | **PASS ✓** |
+| Victim | SOC | Block | **PASS ✓** |
+| Attack | SOC | Block | **PASS ✓** |
+| Attack | Victim | Block | **PASS ✓** |
+| Victim | Attack | Block | **PASS ✓** |
+
+Attack-to-SOC traffic was denied by the router and verified by the nftables drop counter:
+
+![Attack to SOC blocked](screenshots/21a-attack-to-soc-blocked.png)
+
+![Router policy drop counter](screenshots/21b-router-policy-drop-counter.png)
+
+Victim-to-SOC traffic was also denied:
+
+![Victim to SOC blocked](screenshots/22a-victim-to-soc-blocked.png)
+
+![Victim to SOC router drop counter](screenshots/22b-router-victim-to-soc-drop-counter.png)
+
+Attack-to-Victim traffic was denied before Windows host-firewall policy became relevant:
+
+![Attack to Victim blocked](screenshots/23a-attack-to-victim-blocked.png)
+
+![Attack to Victim router drop counter](screenshots/23b-router-attack-to-victim-drop-counter.png)
+
+The final runtime segmentation test reached the expected default-drop count:
+
+![Final segmentation counter](screenshots/24-router-final-segmentation-counter.png)
+
+### Validated-policy snapshot
+
+After the runtime rules passed the directional matrix, a ROUTER-01 snapshot was created as a recovery point before persistence work.
+
+![Runtime policy validated snapshot](screenshots/25-runtime-policy-validated-snapshot.png)
+
+### Persistent nftables configuration
+
+The validated policy was written to:
+
+```text
+/etc/nftables.conf
+```
+
+The service was enabled, restarted, and confirmed active.
+
+### Full reboot validation
+
+ROUTER-01 was rebooted and revalidated.
+
+Post-reboot state:
+
+```text
+net.ipv4.ip_forward = 1
+nftables service    = active
+
+10.10.20.0/24 → ens18
+10.10.30.0/24 → ens19
+10.10.40.0/24 → ens20
+```
+
+Fresh traffic tests after reboot proved both sides of the policy:
+
+```text
+Ubuntu-SOC → WIN11-01
+4 transmitted / 4 received
+ALLOW ✓
+
+KALI-01 → Ubuntu-SOC
+4 transmitted / 0 received
+BLOCK ✓
+```
+
+![Post-reboot SOC to Victim allowed](screenshots/26a-postreboot-soc-to-victim-allowed.png)
+
+![Post-reboot Attack to SOC blocked](screenshots/26b-postreboot-attack-to-soc-blocked.png)
+
+The final post-reboot nftables counters showed accepted established traffic and four packets hitting the default-drop rule:
+
+![Post-reboot final policy counters](screenshots/26c-postreboot-final-policy-counters.png)
+
+### Section 11 outcome
+
+```text
+Module 02
+No Layer-3 path between zones
+        ↓
+Isolation by architecture
+
+Module 03
+Layer-3 routing exists
+        ↓
+ROUTER-01 forwards between zones
+        ↓
+nftables authorizes selected flows
+        ↓
+conntrack permits legitimate replies
+        ↓
+default deny blocks unauthorized initiation
 ```
 
 ---
@@ -565,9 +690,9 @@ That console improvement will be used for the remaining nftables work.
 
 ---
 
-## Skills Demonstrated So Far
+## Skills Demonstrated
 
-Module 03 currently demonstrates practical work with:
+Module 03 demonstrates practical work with:
 
 - Linux IPv4 routing;
 - Proxmox Linux bridges;
@@ -585,47 +710,67 @@ Module 03 currently demonstrates practical work with:
 - Windows `pktmon`;
 - Windows Defender Firewall rule scoping;
 - distinguishing routing failures from firewall-policy failures;
-- serial-console configuration; and
+- serial-console configuration;
+- Linux nftables;
+- stateful firewall policy;
+- connection tracking;
+- default-deny segmentation;
+- firewall persistence with systemd;
+- post-reboot security-control validation; and
 - evidence-driven troubleshooting.
 
 ---
 
 ## Evidence Status
 
-Evidence screenshots have been captured throughout the live build and are being curated for the final Module 03 portfolio package.
+Evidence has been captured for the major Module 03 build and validation checkpoints, including:
 
-The final module will include:
+- Proxmox and Linux-bridge baseline;
+- ROUTER-01 provisioning and addressing;
+- forwarding disabled/enabled comparison;
+- persistent endpoint and router routing;
+- packet tracing and Windows return-path diagnosis;
+- host-firewall authorization testing;
+- runtime nftables policy;
+- directional segmentation tests;
+- default-drop counters;
+- validated-policy snapshot;
+- persistent nftables configuration; and
+- post-reboot allow/deny validation.
 
-- architecture and baseline evidence;
-- router provisioning evidence;
-- pre/post forwarding tests;
-- persistence validation;
-- Windows routing troubleshooting;
-- packet-trace evidence;
-- host-firewall policy tests;
-- nftables policy implementation;
-- segmentation validation matrix;
-- qualification questions; and
-- final module status.
+The technical evidence package is complete. The remaining knowledge review is a separate learning phase rather than a blocker for continued Cyber Forge construction.
 
 ---
 
 ## Current Module State
 
 ```text
-ROUTER-01 operational             ✓
-Three routed lab networks         ✓
-IPv4 forwarding persistent        ✓
-Ubuntu-SOC routes persistent      ✓
-WIN11-01 routes persistent        ✓
-KALI-01 routes persistent         ✓
-Packet-path troubleshooting       ✓
-Host-policy behavior validated    ✓
-Router firewall baseline captured ✓
+ROUTER-01 operational                 ✓
+Three routed lab networks             ✓
+IPv4 forwarding persistent            ✓
+Ubuntu-SOC routes persistent          ✓
+WIN11-01 routes persistent            ✓
+KALI-01 routes persistent             ✓
+Packet-path troubleshooting           ✓
+Host-policy behavior validated        ✓
+Stateful nftables policy              ✓
+Directional segmentation matrix       ✓
+nftables persistence                  ✓
+Post-reboot allow/deny validation      ✓
+Technical Build Gate                  PASS ✓
 
-Stateful nftables policy           NEXT
-Final segmentation validation     PENDING
-Qualification                     PENDING
+Knowledge Review                       PENDING
 ```
 
-**Module 03 remains IN PROGRESS.**
+## Build Gate vs. Knowledge Review
+
+CyberBlue separates **building and validating a capability** from later **conceptual mastery**.
+
+For Module 03:
+
+- **Build Gate — PASS ✓:** the environment was built, validated, troubleshot, persisted, reboot-tested, and documented.
+- **Knowledge Review — PENDING:** deeper explanation and interview-level recall will be revisited after the wider Cyber Forge range is built.
+
+This keeps forward momentum on the range without treating incomplete memorization as equivalent to incomplete engineering work.
+
+**Module 03 technical build is COMPLETE.**
