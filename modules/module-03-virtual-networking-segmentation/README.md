@@ -100,6 +100,10 @@ ROUTER-01 deliberately has **no interface on vmbr0**, keeping the Cyber Forge ro
 
 ## 1. Baseline Validation
 
+![Module 03 network baseline — interfaces](screenshots/01a-network-baseline-interfaces.png)
+
+![Module 03 network baseline — bridges and Proxmox configuration](screenshots/01b-network-baseline-bridges.png)
+
 Before introducing routing, the Proxmox host was revalidated.
 
 Observed state:
@@ -142,6 +146,12 @@ VM103 KALI-01
 ---
 
 ## 2. Dedicated Router Design
+
+![ROUTER-01 pre-deployment review](screenshots/02-router01-predeployment-review.png)
+
+![ROUTER-01 interface addressing](screenshots/03-router01-interface-addressing.png)
+
+![ROUTER-01 post-install network validation](screenshots/04-router01-postinstall-network-validation.png)
 
 A new Ubuntu Server VM was created:
 
@@ -204,6 +214,10 @@ A host can reach the router interface on its own subnet even when the router ref
 
 ## 4. Routes Present, Forwarding Disabled
 
+![Pre-routing baseline snapshot](screenshots/05-router01-pre-routing-snapshot.png)
+
+![Ubuntu-SOC routed test with forwarding disabled](screenshots/06-routing-disabled-ubuntu-soc.png)
+
 Temporary routes were added to the endpoints so they knew how to reach remote Cyber Forge subnets.
 
 Examples:
@@ -239,6 +253,10 @@ The endpoint knew where to send the packet, but ROUTER-01 was not yet willing to
 
 ## 5. Enabling IPv4 Forwarding
 
+![IPv4 forwarding enabled on ROUTER-01](screenshots/07-ip-forwarding-enabled.png)
+
+![Ubuntu-SOC routed test after forwarding enabled](screenshots/08-routing-enabled-ubuntu-soc.png)
+
 IPv4 forwarding was enabled at runtime:
 
 ```bash
@@ -271,6 +289,8 @@ Routes unchanged + ip_forward=1
 
 ## 6. Persistent Router Forwarding
 
+![ROUTER-01 post-reboot forwarding persistence](screenshots/09-router01-postreboot-persistence.png)
+
 The runtime forwarding change was made persistent:
 
 ```text
@@ -296,6 +316,10 @@ This proved that ROUTER-01 remained a functional Layer-3 router after reboot.
 ---
 
 ## 7. Persistent Endpoint Routes
+
+![Ubuntu-SOC persistent Cyber Forge routes](screenshots/10-ubuntu-soc-persistent-routes.png)
+
+![WIN11-01 persistent route validation](screenshots/11-win11-persistent-route-validation.png)
 
 ### Ubuntu-SOC
 
@@ -345,6 +369,8 @@ The routes remained present after reboot.
 ---
 
 ## 8. Troubleshooting Case — Windows Return Path
+
+![ROUTER-01 ICMP forwarding trace](screenshots/12-router01-icmp-forwarding-trace.png)
 
 One of the most useful failures in the module occurred when:
 
@@ -431,6 +457,10 @@ Ubuntu-SOC → WIN11-01
 
 ## 9. Routing vs. Host Firewall Policy
 
+![Temporary Kali-to-Windows firewall allow](screenshots/13-kali-win-temp-firewall-allow.png)
+
+![Kali-to-Windows deny restored after temporary rule removal](screenshots/14-kali-win-firewall-deny-restored.png)
+
 Kali later had valid persistent routing to WIN11-01, and Windows had a valid return route, but Kali-to-Windows ICMP still failed.
 
 A narrowly scoped temporary Windows Defender Firewall rule was created allowing ICMP Echo Requests only from:
@@ -454,6 +484,8 @@ A valid network path can exist while a security control intentionally denies the
 ---
 
 ## 10. Pre-Policy Router Baseline
+
+![ROUTER-01 pre-policy firewall baseline](screenshots/15-router01-pre-policy-baseline.png)
 
 Before implementing router-level segmentation policy, ROUTER-01 was inspected.
 
@@ -517,6 +549,8 @@ to:
 ---
 
 ## Serial Console Improvement
+
+![ROUTER-01 serial console setup](screenshots/16-router01-serial-console-setup.png)
 
 During the module, ROUTER-01 was also configured with a Proxmox serial port and Ubuntu serial getty:
 
