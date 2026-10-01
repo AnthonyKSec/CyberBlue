@@ -113,6 +113,7 @@ As additional modules are completed, this repository will expand into endpoint t
 |---|---|---|
 | [Module 02 — Cyber Forge Range Foundation](modules/module-02-range-foundation/README.md) | Proxmox networking, segmentation, VM provisioning, validation, and snapshot recovery | **QUALIFIED ✓** |
 | [Module 03 — Virtual Networking & Segmentation](modules/module-03-virtual-networking-segmentation/README.md) | Layer-3 routing, persistent routes, packet tracing, return-path troubleshooting, and segmentation policy | **BUILD COMPLETE ✓** |
+| [Module 04 — Endpoint Telemetry & Logging](modules/module-04-endpoint-telemetry-logging/README.md) | Native Linux/Windows telemetry, authentication-event correlation, visibility analysis, and later enhanced endpoint logging | **IN PROGRESS 🚧** |
 
 Module 03 has completed its technical build gate. Deeper knowledge review is tracked separately and will be revisited after the wider Cyber Forge range is built.
 
@@ -170,6 +171,33 @@ Work completed so far includes:
 
 ---
 
+## Module 04 — Endpoint Telemetry & Logging
+
+Module 04 is currently **in progress** and shifts the Cyber Forge from network-path engineering into endpoint visibility and evidence correlation.
+
+Work completed so far includes:
+
+```text
+[✓] Pre-telemetry snapshots on Linux-Mint and WIN11-01
+[✓] Native Linux journal, boot, and login/reboot telemetry reviewed
+[✓] Linux service-specific telemetry and /var/log sources inspected
+[✓] Linux authentication and sudo activity correlated to auth.log
+[✓] Native Windows Security telemetry reviewed in Event Viewer
+[✓] Event 4672 interpreted
+[✓] Known Windows Event 4624 interactive logon correlated to cyberadmin
+[✓] Service-vs-interactive logon distinction validated
+[ ] Service activity generation and investigation
+[ ] File/process visibility testing
+[ ] Native telemetry matrix
+[ ] Enhanced Windows/Linux telemetry
+[ ] Controlled telemetry failure and restoration
+[ ] Technical Build Gate
+```
+
+**[View Module 04 work-in-progress documentation →](modules/module-04-endpoint-telemetry-logging/README.md)**
+
+---
+
 ## Current Lab Status
 
 ```text
@@ -188,9 +216,14 @@ Work completed so far includes:
 [✓] Persistent inter-subnet routing validated
 [✓] Packet-path troubleshooting completed
 [✓] Stateful router segmentation policy validated
+[✓] Module 04 endpoint baselines captured
+[✓] Native Linux and Windows telemetry reviewed
+[✓] Known Linux sudo event correlated to authentication logs
+[✓] Known Windows interactive logon correlated to Security log
+[ ] Module 04 enhanced telemetry and visibility-gap testing in progress
 ```
 
-The current range has completed the **Module 03 technical build** and is ready to progress to the next Cyber Forge build stage.
+The current range has completed the **Module 03 technical build** and is actively progressing through **Module 04 — Endpoint Telemetry & Logging**.
 
 ---
 
