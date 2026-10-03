@@ -107,6 +107,12 @@ Current CyberBlue work demonstrates practical experience with:
 - Controlled telemetry failure and recovery
 - Endpoint visibility-gap analysis
 - Portfolio-ready lab reporting
+- Wazuh SIEM deployment and administration
+- Docker Compose service orchestration
+- OpenSearch security configuration
+- SIEM administrative credential hardening
+- Direct API authentication validation
+- Docker service-exposure hardening
 
 As additional modules are completed, this repository will expand into endpoint telemetry, SIEM, network monitoring, vulnerability management, detection engineering, incident response, threat hunting, SOAR, cloud security operations, and purple-team validation.
 
@@ -119,8 +125,9 @@ As additional modules are completed, this repository will expand into endpoint t
 | [Module 02 — Cyber Forge Range Foundation](modules/module-02-range-foundation/README.md) | Proxmox networking, segmentation, VM provisioning, validation, and snapshot recovery | **QUALIFIED ✓** |
 | [Module 03 — Virtual Networking & Segmentation](modules/module-03-virtual-networking-segmentation/README.md) | Layer-3 routing, persistent routes, packet tracing, return-path troubleshooting, and segmentation policy | **BUILD COMPLETE ✓** |
 | [Module 04 — Endpoint Telemetry & Logging](modules/module-04-endpoint-telemetry-logging/README.md) | Native and enhanced endpoint telemetry, Sysmon, auditd, visibility-gap testing, and telemetry recovery | **BUILD COMPLETE ✓** |
+| [Module 05 — Centralized Logging & SIEM Foundations](modules/module-05-centralized-logging-siem/README.md) | Wazuh SIEM deployment, platform hardening, centralized telemetry architecture, and upcoming endpoint enrollment | **IN PROGRESS** |
 
-Module 03 has completed its technical build gate. Deeper knowledge review is tracked separately and will be revisited after the wider Cyber Forge range is built.
+Modules 03 and 04 have completed their technical build gates. Module 05 is now actively building centralized logging and SIEM capability. Deeper knowledge review remains tracked separately and will be revisited after the wider Cyber Forge range is built.
 
 ---
 
@@ -201,6 +208,37 @@ Module 04 has completed its **technical Build Gate** and establishes native and 
 
 ---
 
+## Module 05 — Centralized Logging & SIEM Foundations
+
+Module 05 is **in progress** and moves Cyber Forge from endpoint-local telemetry into centralized security monitoring.
+
+Completed work includes:
+
+```text
+[✓] Ubuntu-SOC resized to 4 vCPU / 8 GB RAM / 64 GB disk
+[✓] Linux LVM and root filesystem expanded
+[✓] Docker / Docker Compose prerequisites validated
+[✓] Pre-Wazuh snapshot created
+[✓] Wazuh Docker 4.14.8 staged and deployed
+[✓] Wazuh certificate generation completed
+[✓] Dashboard bound to the management interface
+[✓] Transient Docker TLS image-pull failure diagnosed and recovered
+[✓] Wazuh administrative credential rotated
+[✓] OpenSearch security configuration reapplied
+[✓] Direct indexer authentication validated with HTTP 200
+[✓] New dashboard admin login validated
+[✓] External host exposure of indexer port 9200 removed
+[✓] Dashboard validated after indexer-port hardening
+[ ] Linux-Mint agent enrollment
+[ ] WIN11-01 agent enrollment
+[ ] Centralized event ingestion and correlation
+[ ] Module 05 Technical Build Gate
+```
+
+**[View Module 05 documentation →](modules/module-05-centralized-logging-siem/README.md)**
+
+---
+
 ## Current Lab Status
 
 ```text
@@ -227,9 +265,16 @@ Module 04 has completed its **technical Build Gate** and establishes native and 
 [✓] Linux auditd enhanced process telemetry validated
 [✓] Controlled telemetry failure and restoration validated
 [✓] Module 04 technical Build Gate completed
+[✓] Ubuntu-SOC expanded for SIEM workload
+[✓] Wazuh 4.14.8 single-node SIEM deployed
+[✓] Wazuh administrative credential hardened
+[✓] Direct indexer authentication validated
+[✓] Wazuh dashboard operational on management network
+[✓] External indexer port 9200 removed from host exposure
+[ ] Wazuh endpoint agent enrollment pending
 ```
 
-The current range has completed the **Module 04 technical Build Gate**. Knowledge review remains deferred while Cyber Forge progresses into centralized logging and SIEM capabilities.
+The current range has completed the **Module 04 technical Build Gate** and is actively progressing through **Module 05 — Centralized Logging & SIEM Foundations**. The Wazuh platform foundation and initial hardening are complete; endpoint enrollment and centralized event ingestion are next.
 
 ---
 
