@@ -1,4 +1,7 @@
 # CyberBlue — Module 03
+
+![CyberBlue Module 03 — Virtual Networking & Segmentation](assets/module-banner.jpg)
+
 ## Virtual Networking & Segmentation
 
 **Status:** TECHNICAL BUILD COMPLETE ✓  

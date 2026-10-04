@@ -1,4 +1,7 @@
 # CyberBlue — Module 02
+
+![CyberBlue Module 02 — Cyber Forge Range Foundation](assets/module-banner.jpg)
+
 ## Cyber Forge Range Foundation
 
 **Status:** QUALIFIED ✓  

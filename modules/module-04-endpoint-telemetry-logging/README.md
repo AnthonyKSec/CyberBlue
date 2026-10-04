@@ -1,4 +1,7 @@
 # CyberBlue — Module 04
+
+![CyberBlue Module 04 — Endpoint Telemetry & Logging](assets/module-banner.jpg)
+
 ## Endpoint Telemetry & Logging
 
 **Status:** TECHNICAL BUILD COMPLETE ✓  

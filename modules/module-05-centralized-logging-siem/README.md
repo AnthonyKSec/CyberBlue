@@ -1,4 +1,7 @@
 # CyberBlue — Module 05
+
+![CyberBlue Module 05 — Centralized Logging & SIEM Foundations](assets/module-banner.jpg)
+
 ## Centralized Logging & SIEM Foundations
 
 **Status:** TECHNICAL BUILD COMPLETE ✓  
