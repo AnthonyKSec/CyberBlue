@@ -5,37 +5,44 @@
 **Platform:** Proxmox VE 9.2.2  
 **SIEM implementation:** Wazuh 4.14.8 single-node Docker deployment  
 **Primary SIEM host:** VM100 — Ubuntu-SOC  
+**Endpoints:** Linux-Mint and WIN11-01  
 **Training method:** Principle → Architecture → Build → Validate → Break/Test → Troubleshoot → Restore → Explain → Document → Qualify
 
-> Module 05 moves Cyber Forge from endpoint-local telemetry into centralized security monitoring. The build now includes a hardened Wazuh platform, Linux and Windows agent enrollment, Sysmon ingestion, known-event correlation, least-privilege cross-segment transport, and a controlled ingestion outage/recovery exercise.
+> Module 05 moves Cyber Forge from endpoint-local telemetry into centralized security monitoring. This README is written as a build document: it records the architecture, the exact implementation sequence, validation checkpoints, troubleshooting, failure/recovery testing, and the evidence captured at each stage.
 
 ---
 
-## Core Principle
+# Module Objective
 
-A SIEM is not valuable because it has a dashboard. It is valuable because it can reliably:
+Module 04 proved that useful telemetry existed locally on the endpoints.
+
+Module 05 solves the next operational problem:
+
+> **How do we collect, centralize, search, correlate, and investigate security telemetry without logging into every endpoint individually?**
+
+The capability being built is:
 
 ```text
-COLLECT
-   ↓
-TRANSPORT
-   ↓
-NORMALIZE / ANALYZE
-   ↓
-INDEX
-   ↓
-SEARCH
-   ↓
-CORRELATE
-   ↓
-INVESTIGATE
+ENDPOINT ACTIVITY
+      ↓
+LOCAL TELEMETRY
+      ↓
+AGENT / COLLECTOR
+      ↓
+SECURE TRANSPORT
+      ↓
+SIEM MANAGER
+      ↓
+INDEX / STORAGE
+      ↓
+SEARCH / ALERT / INVESTIGATE
 ```
 
-Module 05 therefore focuses on the complete telemetry path rather than simply installing Wazuh.
+Wazuh is the implementation used in Cyber Forge, but the principles apply to SIEM platforms generally.
 
 ---
 
-## Final Architecture
+# Final Architecture
 
 ```text
                          MANAGEMENT LAN
@@ -83,7 +90,7 @@ Module 05 therefore focuses on the complete telemetry path rather than simply in
 
 ### Trust-boundary rule
 
-The Victim network was **not** broadly opened to the SOC network.
+The Victim network was not broadly opened to the SOC network.
 
 Only this permanent exception was added:
 
@@ -95,70 +102,21 @@ Ports:       1514, 1515
 Action:      ACCEPT
 ```
 
-Everything else continues to fall through to the router's default drop policy.
+Everything else continues to fall through to the router's default-drop policy.
 
 ---
 
-## Technical Build Progress
+# Build Walkthrough
 
-```text
-[✓] Proxmox capacity baseline captured
-[✓] Ubuntu-SOC resized to 4 vCPU / 8 GB RAM / 64 GB disk
-[✓] Linux LVM/root filesystem expanded
-[✓] Docker / Docker Compose / Git prerequisites validated
-[✓] vm.max_map_count validated
-[✓] Pre-Wazuh snapshot created
-[✓] Wazuh Docker v4.14.8 repository staged
-[✓] Wazuh indexer certificates generated
-[✓] Compose configuration validated
-[✓] Dashboard bound to management address only
-[✓] Wazuh single-node stack deployed
-[✓] Transient Docker image-pull TLS failure recovered
-[✓] Wazuh admin credential rotated
-[✓] OpenSearch security configuration reapplied
-[✓] Direct indexer authentication validated with HTTP 200
-[✓] New dashboard admin login validated
-[✓] External host exposure of indexer port 9200 removed
-[✓] Dashboard validated after indexer hardening
-[✓] Linux-Mint Wazuh agent installed and enrolled
-[✓] Linux-Mint shown active as Agent 001
-[✓] Known Linux sudo event correlated centrally
-[✓] WIN11-01 baseline segmentation block demonstrated
-[✓] Least-privilege TCP 1514/1515 router exception implemented
-[✓] Router rule counters validated
-[✓] Router rule made persistent and reloaded successfully
-[✓] Windows Wazuh package transferred through temporary controlled path
-[✓] Temporary TCP 8080 staging path removed
-[✓] WIN11-01 Wazuh agent installed and enrolled
-[✓] WIN11-01 shown active as Agent 002
-[✓] Sysmon Operational channel added to Wazuh collection
-[✓] Known Sysmon Event ID 1 correlated centrally
-[✓] Controlled Wazuh ingestion outage created
-[✓] Endpoint remained healthy during transport outage
-[✓] Local Sysmon telemetry continued during outage
-[✓] Central visibility gap demonstrated
-[✓] Transport path restored
-[✓] Agent reconnection validated
-[✓] Buffered outage event backfilled after reconnect
-[✓] New post-recovery telemetry validated
-[✓] Temporary test rules and staging services removed
-[✓] Final router policy validated
-[✓] Final Wazuh stack health validated
-[✓] Both agents active in Wazuh
-[✓] Final post-Module-05 snapshots captured
-[✓] Temporary installation/test artifacts removed
-[✓] Module 05 Technical Build Gate completed
-[ ] Knowledge Review — deferred until wider range build-out
-[ ] Independent Qualification — deferred until wider range build-out
-```
+## 1. Capacity Preflight and Ubuntu-SOC Resize
 
----
+Before installing Wazuh, I validated that the Proxmox host and Ubuntu-SOC VM had enough CPU, memory, and storage to support the SIEM workload.
 
-## 1. Capacity and Host Preparation
+![Proxmox capacity baseline](screenshots/01a-module05-proxmox-capacity-baseline.png)
 
-The Wazuh deployment started with capacity validation rather than immediately installing software.
+![Ubuntu-SOC resource baseline](screenshots/01b-module05-ubuntu-soc-resource-baseline.png)
 
-### Original Ubuntu-SOC allocation
+The original Ubuntu-SOC allocation was:
 
 ```text
 2 vCPU
@@ -166,7 +124,7 @@ The Wazuh deployment started with capacity validation rather than immediately in
 32 GB disk
 ```
 
-### Final allocation
+I resized VM100 to:
 
 ```text
 4 vCPU
@@ -174,7 +132,9 @@ The Wazuh deployment started with capacity validation rather than immediately in
 64 GB disk
 ```
 
-The Linux storage stack was expanded through the full path:
+![Ubuntu-SOC resource resize](screenshots/01c-module05-ubuntu-soc-resource-resize.png)
+
+The virtual disk increase had to be extended through the Linux storage stack:
 
 ```text
 Virtual disk
@@ -188,13 +148,15 @@ Logical volume
 ext4 filesystem
 ```
 
-Commands included:
+Commands used:
 
 ```bash
 sudo growpart /dev/sda 3
 sudo pvresize /dev/sda3
 sudo lvextend -l +100%FREE -r /dev/mapper/ubuntu--vg-ubuntu--lv
 ```
+
+![Ubuntu-SOC storage expanded](screenshots/01d-module05-ubuntu-soc-storage-expanded.png)
 
 Final root filesystem state was approximately:
 
@@ -204,17 +166,50 @@ Final root filesystem state was approximately:
 12% used
 ```
 
-A Proxmox thin-provisioning overcommit warning remains an infrastructure item to address separately. The pool was not physically full during Module 05, but additional snapshot growth should be monitored.
+> The Proxmox thin pool reported an overcommit warning. Physical utilization remained low enough to proceed, but thin-pool growth remains an infrastructure item to monitor.
 
 ---
 
-## 2. Wazuh Platform Deployment
+## 2. Validate Wazuh Host Prerequisites
 
-The Wazuh Docker repository was staged at:
+I validated Docker, Git, kernel settings, and Docker Compose before deploying the SIEM.
+
+![Wazuh host prerequisites](screenshots/02a-module05-wazuh-host-prerequisites.png)
+
+Docker Compose v2 was then installed and the prerequisite check was repeated.
+
+![Wazuh prerequisites passed](screenshots/02b-module05-wazuh-prerequisites-passed.png)
+
+Validated environment:
+
+```text
+Docker:           29.1.3
+Docker Compose:   2.40.3
+Git:              2.43.0
+vm.max_map_count: 1048576
+```
+
+---
+
+## 3. Create Pre-Wazuh Snapshot and Stage Repository
+
+Before introducing Wazuh, I created a rollback point for Ubuntu-SOC.
+
+![Pre-Wazuh snapshot](screenshots/03a-module05-pre-wazuh-snapshot.png)
+
+Snapshot name:
+
+```text
+module05-pre-wazuh
+```
+
+I then staged the Wazuh Docker repository using the stable version selected for the build:
 
 ```text
 v4.14.8
 ```
+
+![Wazuh repository staged](screenshots/03b-module05-wazuh-repository-staged.png)
 
 Deployment path:
 
@@ -222,7 +217,47 @@ Deployment path:
 ~/Wazuh-docker/single-node
 ```
 
-The platform consists of:
+---
+
+## 4. Generate Wazuh Certificates
+
+The Wazuh Docker deployment requires certificates for the manager, indexer, dashboard, and administrative security operations.
+
+Certificate generation was executed through the Wazuh-supplied Docker Compose generator.
+
+![Wazuh certificates generated](screenshots/04a-module05-wazuh-certificates-generated.png)
+
+The certificate set included:
+
+```text
+root CA
+admin certificate/key
+manager certificate/key
+indexer certificate/key
+dashboard certificate/key
+```
+
+---
+
+## 5. Deploy Wazuh Single-Node Stack
+
+The first image-pull attempt failed with a TLS transport error.
+
+![Wazuh image-pull TLS error](screenshots/05x-module05-wazuh-image-pull-tls-error.png)
+
+Observed error:
+
+```text
+tls: bad record MAC
+```
+
+The Compose configuration itself validated cleanly, so I treated the problem as a transient image-transfer failure rather than a Wazuh configuration issue.
+
+I retried the image pull and started the stack successfully.
+
+![Wazuh stack started](screenshots/05a-module05-wazuh-stack-started.png)
+
+The running stack contained:
 
 ```text
 wazuh.manager
@@ -230,60 +265,42 @@ wazuh.indexer
 wazuh.dashboard
 ```
 
-The dashboard is published only through the Ubuntu-SOC management interface:
+The dashboard was bound to the management interface:
 
 ```text
 192.168.12.227:443 → dashboard:5601
 ```
 
-The indexer remains reachable internally on Docker port 9200 but is no longer published on the Ubuntu-SOC host.
+I then validated the first successful dashboard login.
 
-### Security principle
-
-> **Expose only the services that must cross a trust boundary.**
-
-Final validation:
-
-```text
-wazuh.manager      UP
-wazuh.indexer      UP
-wazuh.dashboard    UP
-host :9200         NOT LISTENING
-```
+![Initial Wazuh dashboard login](screenshots/05b-module05-wazuh-dashboard-initial-login.png)
 
 ---
 
-## 3. Administrative Credential Hardening
+## 6. Harden the Wazuh Administrative Credential
 
-The default indexer administrative credential was rotated.
+Before changing the default administrative credential, I created configuration backups.
 
-This required coordination between:
+![Wazuh credential backup](screenshots/06a-module05-wazuh-credential-backup.png)
 
-```text
-docker-compose.yml
-        +
-internal_users.yml
-        +
-OpenSearch securityadmin.sh
-```
+I generated a new OpenSearch password hash and updated the relevant Wazuh configuration.
 
-An initial direct authentication test returned:
+![Wazuh admin credential updated](screenshots/06b-module05-wazuh-admin-credential-updated.png)
 
-```text
-HTTP 401
-Unauthorized
-```
+The first direct authentication test failed with HTTP 401.
 
-The root cause was a password/hash mismatch caused during manual hash transcription through the console.
+![Wazuh admin authentication 401](screenshots/06x-module05-admin-auth-401.png)
 
-The recovery path was:
+This was traced to a password/hash mismatch caused by manual transcription through the Proxmox console.
+
+The troubleshooting path was:
 
 ```text
-Dashboard authentication failure
+Dashboard login failure
         ↓
 Direct indexer authentication test
         ↓
-HTTP 401 confirmed
+HTTP 401
         ↓
 Credential/hash mismatch isolated
         ↓
@@ -296,58 +313,122 @@ Fresh hash generated
 OpenSearch security configuration reapplied
         ↓
 Direct authentication retested
-        ↓
-HTTP 200
 ```
 
-The corrected security update reported:
+The security configuration was applied successfully.
 
-```text
-Clusterstate: GREEN
-Configuration for 'internalusers' created or updated
-Done with success
-```
+![Wazuh security config applied](screenshots/06c-module05-wazuh-security-config-applied.png)
 
-### Security principle
+A corrected configuration was then reapplied.
 
-> A successful configuration load does not prove the intended credential works. Authentication must be tested directly.
+![Wazuh security config reapplied](screenshots/06c2-module05-wazuh-security-config-reapplied.png)
+
+Direct indexer authentication returned HTTP 200.
+
+![Wazuh indexer authentication validated](screenshots/06c3-module05-wazuh-indexer-auth-validated.png)
+
+The full Wazuh stack was restarted.
+
+![Wazuh stack restarted](screenshots/06c4-module05-wazuh-stack-restarted.png)
+
+The new administrative credential was then validated through the dashboard.
+
+![New Wazuh admin login validated](screenshots/06d-module05-wazuh-new-admin-login-validated.png)
+
+### Principle
+
+> A configuration loading successfully does not prove the intended credential works. Authentication must be tested directly.
 
 ---
 
-## 4. Linux-Mint Agent Enrollment
+## 7. Remove Unnecessary Host Exposure of Indexer Port 9200
 
-Linux-Mint remained isolated on the SOC network:
+The default Compose configuration exposed the Wazuh indexer API on the Ubuntu-SOC host.
 
-```text
-Linux-Mint
-10.10.20.11/24
-   |
- vmbr20
-   |
-Ubuntu-SOC
-10.10.20.10/24
-```
+I removed the host-level mapping for TCP 9200 and recreated the indexer container.
 
-No default route was required.
+![Wazuh indexer port hardened](screenshots/07a-module05-wazuh-indexer-port-hardened.png)
 
-Connectivity to the Wazuh services was validated:
+Post-change validation showed:
 
 ```text
-10.10.20.10:1514   reachable
-10.10.20.10:1515   reachable
+Indexer container: 9200/tcp
+Ubuntu-SOC host:    PORT 9200 NOT LISTENING
 ```
 
-To preserve endpoint isolation, the Linux agent package was downloaded on Ubuntu-SOC, temporarily served only on:
+The dashboard continued to function after the hardening change.
+
+![Dashboard after indexer hardening](screenshots/07b-module05-dashboard-after-indexer-hardening.png)
+
+### Principle
+
+> Expose only the services that must cross a trust boundary.
+
+---
+
+# Linux-Mint Enrollment and Telemetry
+
+## 8. Enroll Linux-Mint as Wazuh Agent 001
+
+Linux-Mint was intentionally kept isolated on the SOC network.
+
+I first validated its address, route state, and reachability to Ubuntu-SOC.
+
+![Linux-Mint pre-agent network validation](screenshots/08a-module05-linux-mint-pre-agent-network-validation.png)
+
+Then I validated the Wazuh communication ports from Linux-Mint:
+
+```text
+TCP 1514   reachable
+TCP 1515   reachable
+```
+
+![Linux-Mint Wazuh port validation](screenshots/08b-module05-linux-mint-wazuh-port-validation.png)
+
+Rather than give Linux-Mint Internet access, I downloaded the Wazuh agent package on Ubuntu-SOC.
+
+![Linux agent package staged](screenshots/08c-module05-linux-agent-package-staged.png)
+
+I temporarily served the package only on the SOC-side interface:
 
 ```text
 10.10.20.10:8080
 ```
 
-and pulled by Linux-Mint across the SOC network.
+![Wazuh agent staging server](screenshots/08d-module05-wazuh-agent-staging-server.png)
 
-SHA-256 hashes were compared before installation to verify transfer integrity.
+Linux-Mint pulled the package from Ubuntu-SOC.
 
-The agent then enrolled successfully:
+![Linux-Mint agent package received](screenshots/08e-module05-linux-mint-agent-package-received.png)
+
+I compared SHA-256 hashes to prove the transferred file was byte-for-byte identical.
+
+![Linux agent package integrity](screenshots/08f-module05-linux-agent-package-integrity.png)
+
+After transfer, the temporary HTTP server was stopped and port 8080 was confirmed closed.
+
+![Linux agent staging service removed](screenshots/08g-module05-agent-staging-service-removed.png)
+
+The Wazuh agent package was installed.
+
+![Linux-Mint Wazuh agent installed](screenshots/08h-module05-linux-mint-wazuh-agent-installed.png)
+
+The agent configuration was validated to confirm:
+
+```text
+Manager:  10.10.20.10
+Port:     1514
+Protocol: TCP
+Version:  4.14.8-1
+```
+
+![Linux-Mint agent config validated](screenshots/08i-module05-linux-mint-agent-config-validated.png)
+
+The agent service was started.
+
+![Linux-Mint Wazuh agent started](screenshots/08j-module05-linux-mint-agent-started.png)
+
+Enrollment logs showed:
 
 ```text
 Requesting a key from server: 10.10.20.10
@@ -356,29 +437,29 @@ Trying to connect to server ([10.10.20.10]:1514/tcp)
 Connected to the server ([10.10.20.10]:1514/tcp)
 ```
 
-Dashboard state:
+![Linux-Mint agent enrollment validated](screenshots/08k-module05-linux-mint-agent-enrollment-validated.png)
 
-```text
-Agent ID: 001
-Name:     linux-mint
-IP:       10.10.20.11
-Version:  v4.14.8
-Status:   Active
-```
+The Wazuh dashboard showed Linux-Mint as active Agent 001.
+
+![Linux-Mint dashboard enrolled](screenshots/08l-module05-linux-mint-dashboard-enrolled.png)
 
 ---
 
-## 5. Linux Known-Event Correlation
+## 9. Correlate a Known Linux sudo Event
 
-A known privileged command was generated:
+I generated a known privileged event on Linux-Mint:
 
 ```bash
 sudo /usr/bin/id
 ```
 
-Wazuh Threat Hunting showed the corresponding sudo alert.
+![Known Linux sudo event generated](screenshots/09a-module05-linux-known-sudo-event-generated.png)
 
-The exact event detail confirmed:
+Wazuh received the corresponding sudo activity.
+
+![Linux centralized sudo event](screenshots/09b-module05-linux-centralized-sudo-event.png)
+
+I opened the event detail and verified the exact command and identity fields:
 
 ```text
 agent.name      linux-mint
@@ -391,116 +472,123 @@ decoder.name    sudo
 full_log        ... COMMAND=/usr/bin/id
 ```
 
+![Linux known event correlated](screenshots/09c-module05-linux-known-event-correlated.png)
+
 ### Capability demonstrated
 
-> Generated a known privileged Linux event and correlated the exact command, source user, destination user, working directory, endpoint identity, and raw log centrally in Wazuh.
+> Generated a known privileged Linux event and correlated the exact command, source user, destination user, endpoint identity, and raw log centrally in Wazuh.
 
 ---
 
-## 6. WIN11-01 Least-Privilege SIEM Routing
+# WIN11-01 Enrollment and Sysmon Centralization
 
-Before changing the router policy, Windows could not reach the Wazuh manager:
+## 10. Extend the Router Policy for Wazuh Only
 
-```text
-WIN11-01 10.10.30.10 → 10.10.20.10:1514   BLOCKED
-WIN11-01 10.10.30.10 → 10.10.20.10:1515   BLOCKED
-```
+Before modifying ROUTER-01, I proved WIN11-01 could not reach Wazuh TCP 1514/1515.
 
-This validated that Module 03 segmentation was still working.
+![WIN11 pre-Wazuh segmentation baseline](screenshots/10a-module05-win11-pre-wazuh-segmentation-baseline.png)
 
-A narrow nftables rule was added:
+I inspected the existing nftables policy before changing it.
+
+![Router pre-Wazuh policy](screenshots/10b-module05-router-pre-wazuh-policy.png)
+
+During rule insertion, duplicate Wazuh rules were accidentally added.
+
+![Duplicate Wazuh router rules](screenshots/10x-module05-router-duplicate-wazuh-rules.png)
+
+The duplicate handles were removed and only one narrow exception was retained.
+
+![Router Wazuh policy added](screenshots/10c-module05-router-wazuh-policy-added.png)
+
+Permanent rule:
 
 ```nft
 iifname "ens19" oifname "ens18" ip saddr 10.10.30.10 ip daddr 10.10.20.10 tcp dport { 1514, 1515 } counter accept
 ```
 
-The rule was placed above the final drop and made persistent in:
+WIN11-01 then reached both Wazuh ports.
 
-```text
-/etc/nftables.conf
-```
+![WIN11 Wazuh ports allowed](screenshots/10d-module05-win11-wazuh-ports-allowed.png)
 
-After reloading the persistent ruleset, Windows connectivity tests still passed.
+I validated that the intended nftables rule counter incremented.
 
-The rule counter confirmed that traffic traversed the intended security policy rather than another path.
+![Router Wazuh rule counter validation](screenshots/10e-module05-router-wazuh-rule-counter-validation.png)
 
----
+The persistent nftables configuration was updated and syntax-checked.
 
-## 7. Windows Agent Enrollment
+![Router Wazuh persistent config](screenshots/10f-module05-router-wazuh-policy-persistent-config.png)
 
-The Wazuh MSI was downloaded to Ubuntu-SOC.
+The persistent ruleset was reloaded.
 
-A temporary nftables rule allowed only:
+![Router persistent policy reloaded](screenshots/10g-module05-router-persistent-policy-reloaded.png)
 
-```text
-10.10.30.10 → 10.10.20.10 TCP 8080
-```
+WIN11-01 connectivity still worked after reload.
 
-for package staging.
-
-The MSI was transferred to:
-
-```text
-C:\Temp\wazuh-agent.msi
-```
-
-SHA-256 hashes were compared between Ubuntu-SOC and WIN11-01 before installation.
-
-After transfer:
-
-- the temporary HTTP server was stopped;
-- the temporary TCP 8080 nftables rule was removed;
-- only the permanent TCP 1514/1515 Wazuh rule remained.
-
-The Windows agent was installed with manager address:
-
-```text
-10.10.20.10
-```
-
-Runtime logs confirmed:
-
-```text
-Valid key received
-Connected to the server ([10.10.20.10]:1514/tcp)
-Agent is now online
-```
-
-Dashboard state:
-
-```text
-Agent ID: 002
-Name:     WIN11-01
-IP:       10.10.30.10
-OS:       Microsoft Windows 11 Pro
-Version:  v4.14.8
-Status:   Active
-```
+![WIN11 Wazuh policy persistence validated](screenshots/10h-module05-win11-wazuh-policy-persistence-validated.png)
 
 ---
 
-## 8. Sysmon Centralization
+## 11. Install and Enroll the Windows Wazuh Agent
 
-WIN11-01 already had Sysmon installed from Module 04.
+The Windows MSI was downloaded and staged on Ubuntu-SOC.
 
-The local channel was verified:
+![WIN11 agent package staged](screenshots/11a-module05-win11-agent-package-staged.png)
+
+A temporary nftables rule allowed only WIN11-01 to reach Ubuntu-SOC TCP 8080.
+
+![Temporary WIN11 staging rule](screenshots/11b-module05-router-temporary-win11-staging-rule.png)
+
+The temporary HTTP server was started on the SOC interface.
+
+![WIN11 staging server](screenshots/11c-module05-win11-staging-server.png)
+
+WIN11-01 downloaded the MSI.
+
+![WIN11 agent package received](screenshots/11d-module05-win11-agent-package-received.png)
+
+I compared SHA-256 hashes between Ubuntu-SOC and WIN11-01.
+
+![WIN11 agent package integrity](screenshots/11e-module05-win11-agent-package-integrity.png)
+
+After the transfer, I removed the temporary staging path.
+
+![WIN11 staging path removed](screenshots/11f-module05-win11-staging-path-removed.png)
+
+The Windows Wazuh agent was installed and configured for:
 
 ```text
-Microsoft-Windows-Sysmon/Operational
-Enabled: True
+Manager:  10.10.20.10
+Port:     1514
+Protocol: TCP
 ```
 
-The Wazuh agent initially collected:
+![WIN11 Wazuh agent installed and configured](screenshots/11g-module05-win11-wazuh-agent-installed-configured.png)
 
-```text
-Application
-Security
-System
-```
+The service was started and enrollment began.
 
-but not the Sysmon Operational channel.
+![WIN11 agent started and enrollment](screenshots/11h-module05-win11-agent-started-enrollment.png)
 
-The following block was added to the Windows Wazuh agent configuration:
+The agent reloaded its shared configuration and returned to a running/online state.
+
+![WIN11 agent post-reload validated](screenshots/11i-module05-win11-agent-post-reload-validated.png)
+
+The Wazuh dashboard showed WIN11-01 as active Agent 002.
+
+![WIN11 dashboard enrolled](screenshots/11j-module05-win11-dashboard-enrolled.png)
+
+---
+
+## 12. Add Sysmon to Centralized Collection
+
+The Wazuh agent initially collected the standard Windows event channels but not Sysmon.
+
+![WIN11 Wazuh event-channel baseline](screenshots/12a-module05-win11-wazuh-eventchannel-baseline.png)
+
+I verified that the Sysmon Operational channel existed locally and was active.
+
+![WIN11 Sysmon channel validated](screenshots/12b-module05-win11-sysmon-channel-validated.png)
+
+I added the following block to the Windows Wazuh agent configuration:
 
 ```xml
 <localfile>
@@ -509,37 +597,27 @@ The following block was added to the Windows Wazuh agent configuration:
 </localfile>
 ```
 
-After restart, the Wazuh agent log confirmed:
+![WIN11 Wazuh Sysmon subscription added](screenshots/12c-module05-win11-wazuh-sysmon-subscription-added.png)
+
+After the service restart, the runtime log confirmed:
 
 ```text
 Analyzing event log: 'Microsoft-Windows-Sysmon/Operational'
 ```
 
----
+![WIN11 Wazuh Sysmon config validated](screenshots/12d-module05-win11-wazuh-sysmon-config-validated.png)
 
-## 9. Windows Known-Event Correlation
-
-A unique process marker was generated:
+I generated a unique known process event:
 
 ```text
 CYBERBLUE_MODULE05_SYSMON_TEST
 ```
 
-using `cmd.exe`.
+![Known WIN11 Sysmon event generated](screenshots/12e-module05-win11-known-sysmon-event-generated.png)
 
-Wazuh Threat Hunting returned exactly one matching Sysmon Event ID 1.
+Wazuh Threat Hunting correlated the exact Sysmon Event ID 1 and command line centrally.
 
-The event detail confirmed:
-
-```text
-agent.id                           002
-agent.ip                           10.10.30.10
-agent.name                         WIN11-01
-data.win.system.eventID            1
-data.win.eventdata.image           C:\Windows\System32\cmd.exe
-data.win.eventdata.commandLine     ...CYBERBLUE_MODULE05_SYSMON_TEST...
-data.win.eventdata.user            WIN11-01\cyberadmin
-```
+![WIN11 Sysmon event correlated](screenshots/12f-module05-win11-sysmon-event-correlated.png)
 
 ### Capability demonstrated
 
@@ -547,84 +625,79 @@ data.win.eventdata.user            WIN11-01\cyberadmin
 
 ---
 
-## 10. Controlled Ingestion Failure / Recovery
+# Controlled Ingestion Failure and Recovery
 
-A controlled network-path failure was created without stopping the endpoint agent.
+## 13. Break the SIEM Transport Path Without Stopping the Agent
 
-A temporary nftables drop rule was inserted **before** the established/related rule so it could interrupt an already-established Wazuh session:
+To test operational resilience, I deliberately broke only the WIN11-01 → Wazuh transport path.
 
-```text
-WIN11-01 10.10.30.10
-        ↓
-TCP 1514/1515
-        ↓
-DROP
-```
+A temporary drop rule was inserted before the established/related rule so it could interrupt an existing Wazuh session.
 
-The router counter confirmed packets were actively being dropped.
+![WIN11 ingestion failure rule added](screenshots/13a-module05-win11-ingestion-failure-rule-added.png)
 
-At the endpoint:
+The endpoint remained healthy while the SIEM transport path failed.
+
+![WIN11 ingestion path failure validated](screenshots/13b-module05-win11-ingestion-path-failure-validated.png)
+
+Validation state:
 
 ```text
 WazuhSvc            Running
-TCP 1514 test       Failed
+TCP 1514            Blocked
+Local Sysmon        Working
+Central transport   Broken
 ```
 
-This established:
-
-```text
-Endpoint agent healthy      ✓
-Local logging operational   ✓
-SIEM transport unavailable  ✓
-```
-
-A unique event was then generated:
+While the path was blocked, I generated a unique event:
 
 ```text
 CYBERBLUE_MODULE05_INGESTION_GAP_TEST
 ```
 
-Local Sysmon Event ID 1 confirmed the event existed on WIN11-01.
+Sysmon recorded it locally.
 
-A Wazuh search during the outage returned:
+![Local event during ingestion failure](screenshots/13c-module05-win11-local-event-during-ingestion-failure.png)
 
-```text
-No results match your search criteria
-```
+A Wazuh search during the outage returned no central result.
 
-This demonstrated a real central visibility gap while local telemetry continued.
+![Central ingestion gap confirmed](screenshots/13d-module05-win11-central-ingestion-gap-confirmed.png)
 
-### Recovery
-
-The temporary drop rule was removed.
-
-The permanent TCP 1514/1515 allow rule remained intact.
-
-WIN11-01 logs then showed:
+This proved:
 
 ```text
-Trying to connect to server ([10.10.20.10]:1514/tcp)
-Connected to the server ([10.10.20.10]:1514/tcp)
-Agent is now online
+Activity occurred locally            ✓
+Endpoint telemetry continued         ✓
+SIEM transport was unavailable       ✓
+Central visibility gap existed       ✓
 ```
 
-After reconnection, Wazuh received the event that had been generated during the outage.
+I then removed the temporary drop rule and restored the path.
 
-The exact command line containing:
+![WIN11 ingestion path restored](screenshots/13e-module05-win11-ingestion-path-restored.png)
 
-```text
-CYBERBLUE_MODULE05_INGESTION_GAP_TEST
-```
+WIN11-01 reconnected to the Wazuh manager.
 
-was visible centrally.
+![WIN11 agent reconnected](screenshots/13f-module05-win11-agent-reconnected.png)
 
-A second post-recovery event was generated:
+Immediately after reconnection, the outage event had not yet appeared in the SIEM.
+
+![Outage event not yet ingested](screenshots/13g-module05-outage-event-not-yet-ingested.png)
+
+I generated a separate post-recovery event:
 
 ```text
 CYBERBLUE_MODULE05_RECOVERY_TEST
 ```
 
-and was also correlated centrally.
+![WIN11 post-recovery event generated](screenshots/13h-module05-win11-post-recovery-event-generated.png)
+
+Wazuh later backfilled the buffered outage event.
+
+![Buffered outage event backfilled](screenshots/13i-module05-buffered-outage-event-backfilled.png)
+
+The new post-recovery event was also received normally.
+
+![Post-recovery telemetry validated](screenshots/13j-module05-post-recovery-telemetry-validated.png)
 
 ### Operational lesson
 
@@ -646,35 +719,48 @@ BUFFERED EVENT FORWARDED
 NORMAL TELEMETRY RESUMES
 ```
 
-This exercise demonstrated both **temporary loss of central visibility** and **buffered-event recovery after connectivity returned**.
+---
+
+# Final Validation and Cleanup
+
+## 14. Validate the Final Cyber Forge SIEM State
+
+I inspected the final ROUTER-01 policy and confirmed:
+
+```text
+temporary ingestion drop rule     removed
+temporary TCP 8080 rule           removed
+permanent Wazuh TCP 1514/1515     present
+default drop                      present
+```
+
+![Router final policy validation](screenshots/14a-module05-router-final-policy-validation.png)
+
+I then validated the Wazuh stack:
+
+```text
+wazuh.manager      UP
+wazuh.indexer      UP
+wazuh.dashboard    UP
+host TCP 9200      NOT LISTENING
+```
+
+![Wazuh final stack validation](screenshots/14b-module05-wazuh-final-stack-validation.png)
+
+Finally, both enrolled endpoints were active:
+
+```text
+001  linux-mint   10.10.20.11   Active
+002  WIN11-01     10.10.30.10   Active
+```
+
+![Module 05 final agent status](screenshots/14c-module05-final-agent-status.png)
 
 ---
 
-## 11. Final Cleanup and Recovery State
+## 15. Create Final Snapshots and Remove Temporary Artifacts
 
-Temporary items were removed:
-
-- Ubuntu-SOC staged Linux agent package;
-- Ubuntu-SOC staged Windows MSI;
-- temporary Python HTTP staging service;
-- temporary router TCP 8080 rule;
-- temporary ingestion-test drop rule;
-- Linux-Mint copied installer;
-- WIN11-01 copied MSI;
-- WIN11-01 Module 05 test files.
-
-Persistent configuration retained:
-
-- Wazuh Manager / Indexer / Dashboard;
-- hardened Wazuh administrative credential;
-- dashboard management binding;
-- indexer internal-only port 9200 exposure;
-- Linux-Mint Wazuh agent;
-- WIN11-01 Wazuh agent;
-- Windows Sysmon event-channel subscription;
-- permanent least-privilege TCP 1514/1515 router rule.
-
-Final Proxmox recovery snapshots were captured for:
+I created final Module 05 recovery snapshots for:
 
 ```text
 VM100  Ubuntu-SOC
@@ -683,13 +769,36 @@ VM102  WIN11-01
 VM104  ROUTER-01
 ```
 
-using the Module 05 completion checkpoint.
+![Module 05 final snapshots](screenshots/15a-module05-final-snapshots.png)
+
+I then removed temporary installation/test artifacts from WIN11-01.
+
+![WIN11 cleanup complete](screenshots/15b-module05-win11-cleanup-complete.png)
+
+The Ubuntu-SOC staging directory was cleaned and the temporary HTTP server was confirmed stopped.
+
+![Ubuntu-SOC cleanup complete](screenshots/15c-module05-ubuntu-soc-cleanup-complete.png)
+
+The copied Linux Wazuh installer was removed from Linux-Mint.
+
+![Linux-Mint cleanup complete](screenshots/15d-module05-linux-mint-cleanup-complete.png)
+
+Persistent configuration retained:
+
+- Wazuh Manager / Indexer / Dashboard
+- hardened administrative credential
+- dashboard management binding
+- indexer internal-only port 9200
+- Linux-Mint Wazuh agent
+- WIN11-01 Wazuh agent
+- Sysmon event-channel collection
+- permanent least-privilege TCP 1514/1515 router rule
 
 ---
 
-## Troubleshooting Highlights
+# Troubleshooting Highlights
 
-### Docker image-pull TLS failure
+## Docker image-pull TLS failure
 
 The first image pull failed with:
 
@@ -697,187 +806,35 @@ The first image pull failed with:
 tls: bad record MAC
 ```
 
-Compose validation remained clean. Retrying the pull/start sequence recovered the deployment.
+Compose validation remained clean, so the pull/start sequence was retried successfully.
 
-### Password/hash mismatch
+## Password/hash mismatch
 
-A manually transcribed password hash produced:
+Manual hash transcription through the console caused an HTTP 401 authentication failure. Direct indexer testing isolated the problem, and SSH was used to rebuild the credential configuration reliably.
 
-```text
-HTTP 401
-Unauthorized
-```
+## Duplicate nftables rule insertion
 
-Direct indexer authentication testing isolated the problem. SSH copy/paste was then used for reliable credential configuration, the security configuration was reapplied, and the direct test returned:
+Duplicate Windows Wazuh rules were accidentally inserted. I inspected rule handles, removed duplicates, and revalidated the clean policy before making it persistent.
 
-```text
-HTTP 200
-```
+## Windows configuration-test mismatch
 
-### Duplicate nftables insertion
-
-During the Windows Wazuh rule addition, duplicate rules were accidentally inserted. Rule handles were inspected, duplicates were removed, and the clean policy was revalidated before persistence.
-
-### Windows configuration-test command mismatch
-
-A Unix-style `wazuh-logcollector -t` validation approach was not available at the attempted Windows path. The Windows validation method was corrected to:
+A Unix-style `wazuh-logcollector -t` validation path was not available at the attempted Windows location. I corrected the validation method to:
 
 ```text
 XML well-formedness
       ↓
 WazuhSvc restart
       ↓
-runtime ossec.log verification
+runtime ossec.log validation
 ```
 
-The runtime log confirmed the Sysmon event channel was being analyzed.
+## Threat Hunting time-window issue
 
-### Time-window search issue
-
-One Threat Hunting search initially returned no result because the known event had aged outside a 15-minute window. Expanding the search window exposed the expected event.
-
-This reinforced that SIEM investigations must account for time range, timezone display, indexing delay, and active filters.
+One expected event disappeared from a 15-minute search window while troubleshooting. Expanding the Wazuh search range exposed the expected event and reinforced the need to account for time range, timezone display, indexing delay, and active filters during SIEM investigations.
 
 ---
 
-## Evidence Ledger
-
-Evidence is captured under the following checkpoint sequence:
-
-```text
-01a-module05-proxmox-capacity-baseline.png
-01b-module05-ubuntu-soc-resource-baseline.png
-01c-module05-ubuntu-soc-resource-resize.png
-01d-module05-ubuntu-soc-storage-expanded.png
-
-02a-module05-wazuh-host-prerequisites.png
-02b-module05-wazuh-prerequisites-passed.png
-
-03a-module05-pre-wazuh-snapshot.png
-03b-module05-wazuh-repository-staged.png
-
-04a-module05-wazuh-certificates-generated.png
-
-05x-module05-wazuh-image-pull-tls-error.png
-05a-module05-wazuh-stack-started.png
-05b-module05-wazuh-dashboard-initial-login.png
-
-06a-module05-wazuh-credential-backup.png
-06b-module05-wazuh-admin-credential-updated.png
-06x-module05-admin-auth-401.png
-06c-module05-wazuh-security-config-applied.png
-06c2-module05-wazuh-security-config-reapplied.png
-06c3-module05-wazuh-indexer-auth-validated.png
-06c4-module05-wazuh-stack-restarted.png
-06d-module05-wazuh-new-admin-login-validated.png
-
-07a-module05-wazuh-indexer-port-hardened.png
-07b-module05-dashboard-after-indexer-hardening.png
-
-08a-module05-linux-mint-pre-agent-network-validation.png
-08b-module05-linux-mint-wazuh-port-validation.png
-08c-module05-linux-agent-package-staged.png
-08d-module05-wazuh-agent-staging-server.png
-08e-module05-linux-mint-agent-package-received.png
-08f-module05-linux-agent-package-integrity.png
-08g-module05-agent-staging-service-removed.png
-08h-module05-linux-mint-wazuh-agent-installed.png
-08i-module05-linux-mint-agent-config-validated.png
-08j-module05-linux-mint-agent-started.png
-08k-module05-linux-mint-agent-enrollment-validated.png
-08l-module05-linux-mint-dashboard-enrolled.png
-
-09a-module05-linux-known-sudo-event-generated.png
-09b-module05-linux-centralized-sudo-event.png
-09c-module05-linux-known-event-correlated.png
-
-10a-module05-win11-pre-wazuh-segmentation-baseline.png
-10b-module05-router-pre-wazuh-policy.png
-10x-module05-router-duplicate-wazuh-rules.png
-10c-module05-router-wazuh-policy-added.png
-10d-module05-win11-wazuh-ports-allowed.png
-10e-module05-router-wazuh-rule-counter-validation.png
-10f-module05-router-wazuh-policy-persistent-config.png
-10g-module05-router-persistent-policy-reloaded.png
-10h-module05-win11-wazuh-policy-persistence-validated.png
-
-11a-module05-win11-agent-package-staged.png
-11b-module05-router-temporary-win11-staging-rule.png
-11c-module05-win11-staging-server.png
-11d-module05-win11-agent-package-received.png
-11e-module05-win11-agent-package-integrity.png
-11f-module05-win11-staging-path-removed.png
-11g-module05-win11-wazuh-agent-installed-configured.png
-11h-module05-win11-agent-started-enrollment.png
-11i-module05-win11-agent-post-reload-validated.png
-11j-module05-win11-dashboard-enrolled.png
-
-12a-module05-win11-wazuh-eventchannel-baseline.png
-12b-module05-win11-sysmon-channel-validated.png
-12c-module05-win11-wazuh-sysmon-subscription-added.png
-12d-module05-win11-wazuh-sysmon-config-validated.png
-12e-module05-win11-known-sysmon-event-generated.png
-12f-module05-win11-sysmon-event-correlated.png
-
-13a-module05-win11-ingestion-failure-rule-added.png
-13b-module05-win11-ingestion-path-failure-validated.png
-13c-module05-win11-local-event-during-ingestion-failure.png
-13d-module05-win11-central-ingestion-gap-confirmed.png
-13e-module05-win11-ingestion-path-restored.png
-13f-module05-win11-agent-reconnected.png
-13g-module05-outage-event-not-yet-ingested.png
-13h-module05-win11-post-recovery-event-generated.png
-13i-module05-buffered-outage-event-backfilled.png
-13j-module05-post-recovery-telemetry-validated.png
-
-14a-module05-router-final-policy-validation.png
-14b-module05-wazuh-final-stack-validation.png
-14c-module05-final-agent-status.png
-
-15a-module05-final-snapshots.png
-15b-module05-win11-cleanup-complete.png
-15c-module05-ubuntu-soc-cleanup-complete.png
-15d-module05-linux-mint-cleanup-complete.png
-```
-
----
-
-## Skills Demonstrated
-
-- SIEM architecture planning;
-- Proxmox capacity analysis and VM resizing;
-- Linux partition/LVM/filesystem expansion;
-- Docker and Docker Compose administration;
-- Wazuh single-node deployment;
-- Wazuh/OpenSearch certificate generation;
-- administrative credential rotation;
-- OpenSearch `securityadmin.sh` operation;
-- direct API authentication testing with `curl`;
-- HTTP 401 diagnosis;
-- service-exposure hardening;
-- host socket validation with `ss`;
-- Wazuh Linux agent deployment;
-- Wazuh Windows agent deployment;
-- offline/controlled package staging;
-- SHA-256 package-integrity verification;
-- Windows Sysmon event-channel collection;
-- Linux sudo-event correlation;
-- Sysmon Event ID 1 process correlation;
-- nftables rule design and persistence;
-- least-privilege cross-segment SIEM transport;
-- nftables counter validation;
-- controlled telemetry-path failure testing;
-- central visibility-gap analysis;
-- agent reconnection validation;
-- buffered-event recovery;
-- post-recovery telemetry validation;
-- rollback snapshot discipline;
-- evidence-driven troubleshooting;
-- portfolio-ready technical documentation.
-
----
-
-## Technical Build Gate
+# Technical Build Gate
 
 ```text
 Host capacity preflight                  PASS
@@ -918,13 +875,63 @@ INDEPENDENT QUALIFICATION                 DEFERRED
 
 ---
 
-## Portfolio Summary
+# Skills Demonstrated
+
+- SIEM architecture planning
+- Proxmox capacity analysis and VM resizing
+- Linux partition/LVM/filesystem expansion
+- Docker and Docker Compose administration
+- Wazuh single-node deployment
+- Wazuh/OpenSearch certificate generation
+- administrative credential rotation
+- OpenSearch `securityadmin.sh`
+- direct API authentication testing with `curl`
+- HTTP 401 diagnosis
+- service-exposure hardening
+- Wazuh Linux agent deployment
+- Wazuh Windows agent deployment
+- controlled/offline package staging
+- SHA-256 package-integrity verification
+- Windows Sysmon event-channel collection
+- Linux sudo-event correlation
+- Sysmon Event ID 1 process correlation
+- nftables rule design and persistence
+- least-privilege cross-segment SIEM transport
+- nftables counter validation
+- controlled telemetry-path failure testing
+- central visibility-gap analysis
+- agent reconnection validation
+- buffered-event recovery
+- post-recovery telemetry validation
+- rollback snapshot discipline
+- evidence-driven troubleshooting
+- portfolio-ready technical documentation
+
+---
+
+# Portfolio Summary
 
 > Built and hardened a Wazuh 4.14.8 SIEM on a segmented Proxmox cyber range, enrolled Linux and Windows endpoints, centralized Linux sudo and Windows Sysmon telemetry, correlated known events, implemented least-privilege nftables transport policy, deliberately interrupted SIEM ingestion, demonstrated the resulting visibility gap, restored connectivity, validated agent reconnection and buffered-event backfill, and captured rollback-ready final snapshots.
 
 ---
 
-## Next Module
+# Evidence Index
+
+The full evidence set is stored in:
+
+```text
+modules/module-05-centralized-logging-siem/screenshots/
+```
+
+See:
+
+**[README-EVIDENCE.md](screenshots/README-EVIDENCE.md)**
+
+for the complete evidence ledger.
+
+---
+
+# Next Module
 
 Module 05 technical construction is complete.
 
