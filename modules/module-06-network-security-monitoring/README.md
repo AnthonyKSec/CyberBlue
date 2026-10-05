@@ -1,87 +1,97 @@
 # CyberBlue — Module 06
 
+![CyberBlue Module 06 — Network Security Monitoring](assets/module-banner.svg)
+
 ## Network Security Monitoring
 
 **Status:** WORK IN PROGRESS  
-**Current checkpoint:** Passive Suricata monitoring, behavioral detection tuning, and Suricata → Wazuh SIEM integration validated  
-**Platform:** Proxmox VE 9.2.2 / Ubuntu Server 24.04 / Suricata 7.0.3 / Wazuh 4.14.8  
-**Training method:** Deploy → Configure → Generate Traffic → Detect → Investigate → Tune → Integrate → Validate
+**Current checkpoint:** Passive NSM, behavioral detection tuning, and Suricata → Wazuh integration validated  
+**Platform:** Proxmox VE 9.2.2  
+**NSM implementation:** Suricata 7.0.3 on VM105 — NSM-01  
+**SIEM integration:** Wazuh 4.14.8  
+**Training method:** Principle → Architecture → Build → Validate → Break/Test → Troubleshoot → Restore → Explain → Document → Qualify
 
-> Module 06 is actively being built. The current checkpoint proves end-to-end network-security-monitoring telemetry from mirrored lab traffic through Suricata and into Wazuh Threat Hunting. Analyst investigation, controlled visibility-failure testing, persistence hardening, and the final technical build gate remain open.
-
----
-
-## Module Purpose
-
-Module 06 introduces **Network Security Monitoring (NSM)** to Cyber Forge.
-
-The goal is not simply to install Suricata. The goal is to demonstrate the ability to:
-
-- deploy a dedicated network sensor;
-- separate management access from passive monitoring;
-- prove that the sensor can observe third-party traffic;
-- distinguish normal activity from security-relevant behavior;
-- create and tune custom detection logic;
-- investigate alert context using network evidence;
-- reduce duplicate/noisy alerts without losing useful signal; and
-- forward Suricata telemetry into the existing Wazuh SIEM for analyst-facing investigation.
+> Module 06 moves Cyber Forge from endpoint and SIEM telemetry into **passive network security monitoring**. This README follows the same build-document format used in Modules 02–05: architecture, implementation sequence, validation checkpoints, troubleshooting, and evidence embedded at the stage where it was captured.
 
 ---
 
-## Core Principle
+# Module Objective
+
+Module 05 established centralized endpoint telemetry in Wazuh.
+
+Module 06 addresses the next operational problem:
+
+> **How do we observe network behavior between systems, detect suspicious patterns, tune the resulting detections, and present those events to an analyst in the SIEM?**
+
+The capability being built is:
+
+```text
+NETWORK ACTIVITY
+      ↓
+OBSERVATION POINT
+      ↓
+PASSIVE PACKET CAPTURE
+      ↓
+FLOW / PROTOCOL INSPECTION
+      ↓
+DETECTION LOGIC
+      ↓
+ALERT
+      ↓
+SIEM INGESTION
+      ↓
+ANALYST INVESTIGATION
+```
+
+The goal is not simply to install Suricata. The goal is to prove that the sensor can see the right traffic, produce useful detections, reduce avoidable alert noise, and deliver actionable telemetry to Wazuh.
+
+---
+
+# Core Principle
 
 > **A network sensor is useful only when it can see the traffic that matters, detect meaningful behavior, and deliver actionable telemetry to an analyst.**
 
-A working Suricata process does not prove useful visibility.
+A healthy Suricata process does not by itself prove useful monitoring.
 
-Module 06 therefore validates the entire chain:
+Module 06 therefore validates:
 
-```text
-Traffic
-  ↓
-Observation point
-  ↓
-Packet capture
-  ↓
-Protocol / flow inspection
-  ↓
-Detection logic
-  ↓
-Alert
-  ↓
-SIEM ingestion
-  ↓
-Analyst investigation
-```
+- sensor placement;
+- packet visibility;
+- third-party traffic observation;
+- signature processing;
+- behavior-based detection;
+- alert tuning;
+- flow-level investigation; and
+- end-to-end SIEM ingestion.
 
 ---
 
-## Current Architecture
+# Final Architecture — Current Checkpoint
 
 ```text
-                        MANAGEMENT LAN
-                        192.168.12.0/24
-                               |
-                             vmbr0
-                               |
-                  +------------+-------------+
-                  |                          |
-             Ubuntu-SOC                  NSM-01
-          Wazuh single-node          ens18 192.168.12.135
-           192.168.12.227                management
-                                             |
-                                             |
-                                      ens19 — no IPv4
-                                             |
-                                           vmbr20
-                                             ^
-                                             |
-                                  mirrored ROUTER-01 traffic
-                                             |
-                              +--------------+--------------+
-                              |                             |
-                         Linux-Mint                     ROUTER-01
-                         10.10.20.11                    10.10.20.1
+                         MANAGEMENT LAN
+                         192.168.12.0/24
+                                |
+                              vmbr0
+                                |
+                   +------------+-------------+
+                   |                          |
+              Ubuntu-SOC                  NSM-01
+           Wazuh single-node          ens18 192.168.12.135
+            192.168.12.227                management
+                                              |
+                                              |
+                                       ens19 — no IPv4
+                                              |
+                                            vmbr20
+                                              ^
+                                              |
+                                   mirrored ROUTER-01 traffic
+                                              |
+                               +--------------+--------------+
+                               |                             |
+                          Linux-Mint                     ROUTER-01
+                          10.10.20.11                    10.10.20.1
 ```
 
 ### NSM-01
@@ -100,46 +110,47 @@ ens19 → vmbr20 → passive monitoring
         no IPv4 address
 ```
 
-Suricata listens on `ens19`, not the management interface.
+Suricata listens on `ens19`, keeping the management plane and passive monitoring plane separate.
 
 ---
 
-## Progress
+# Build Walkthrough
+
+## 1. Capacity Preflight and NSM-01 Provisioning
+
+Before introducing another security workload, I reviewed the Proxmox host for available memory, storage, and active VM pressure.
+
+![Module 06 Proxmox capacity preflight](screenshots/01a-module06-proxmox-capacity-preflight.png)
+
+The host had sufficient memory headroom to proceed, and the guest filesystem review from the previous SIEM work confirmed that the Wazuh data footprint was legitimate rather than an immediate storage fault.
+
+NSM-01 was provisioned as:
 
 ```text
-[✓] NSM-01 provisioned
-[✓] Suricata 7.0.3 installed
-[✓] AF_PACKET capture interface corrected
-[✓] Emerging Threats Open rules installed
-[✓] Suricata configuration validated
-[✓] Live EVE JSON telemetry validated
-[✓] Custom ICMP detection created and triggered
-[✓] Dedicated passive monitoring NIC added
-[✓] Proxmox vmbr20 traffic mirroring configured
-[✓] Third-party passive detection validated
-[✓] Protocol-aware inspection observed
-[✓] TCP SYN behavioral threshold detection created
-[✓] Alert-noise problem reproduced
-[✓] Threshold rule tuned and retested
-[✓] Wazuh Agent 003 enrolled on NSM-01
-[✓] Suricata eve.json ingestion into Wazuh validated
-[✓] Suricata alert visible in Wazuh Threat Hunting
-[ ] Exact alert-window analyst write-up
-[ ] Controlled NSM visibility failure / recovery test
-[ ] Make passive NIC state persistent
-[ ] Make Proxmox traffic mirroring persistent
-[ ] Final Module 06 technical build gate
-[ ] Knowledge review — deferred until wider range build-out
-[ ] Independent qualification — deferred until wider range build-out
+VM ID:     105
+Name:      NSM-01
+OS:        Ubuntu Server 24.04
+CPU:       2 vCPU
+Memory:    4096 MiB
+Disk:      32 GiB
+net0:      VirtIO → vmbr0
 ```
+
+The management interface became:
+
+```text
+ens18 → 192.168.12.135/24
+```
+
+OpenSSH was installed so the remaining work could be performed through a reliable terminal session.
 
 ---
 
-## 1. Suricata Deployment
+## 2. Deploy and Validate Suricata
 
 Suricata 7.0.3 was installed on NSM-01.
 
-The initial service start failed because the default capture configuration referenced `eth0`, while NSM-01 used `ens18`.
+The first service start failed because the default capture configuration referenced `eth0`, while the actual interface was `ens18`.
 
 Observed error:
 
@@ -148,13 +159,13 @@ Failure when trying to get MTU via ioctl for 'eth0':
 No such device
 ```
 
-The AF_PACKET interface was corrected and the configuration was validated before restart:
+The AF_PACKET capture interface was corrected without globally replacing every interface reference in the configuration.
+
+The Emerging Threats Open ruleset was installed using:
 
 ```bash
-sudo suricata -T -c /etc/suricata/suricata.yaml
+sudo suricata-update
 ```
-
-The Emerging Threats Open ruleset was installed with `suricata-update`.
 
 Result:
 
@@ -163,25 +174,33 @@ Result:
 /var/lib/suricata/rules/suricata.rules
 ```
 
-Live EVE JSON telemetry then confirmed DNS, HTTP, IPv4, IPv6, flow, and multicast/broadcast processing.
+Configuration validation:
 
-### Principle demonstrated
+```bash
+sudo suricata -T -c /etc/suricata/suricata.yaml
+```
 
-> **Service health is not enough. The capture interface, ruleset, and live packet processing must all be validated.**
+Live EVE JSON telemetry confirmed DNS, HTTP, IPv4, IPv6, flow, and multicast/broadcast processing.
+
+### Principle
+
+> Service health is not enough. The capture interface, ruleset, and actual packet processing must all be validated.
 
 ---
 
-## 2. First Controlled Detection
+## 3. Create the First Controlled Detection
 
-A local ICMP detection rule was created:
+A local ICMP signature was created:
 
 ```text
 alert icmp any any -> any any (msg:"CYBER FORGE - ICMP Detection Test"; itype:8; sid:1000001; rev:1;)
 ```
 
-Controlled ICMP traffic from NSM-01 to `8.8.8.8` generated four matching alerts.
+Controlled ICMP traffic from NSM-01 to `8.8.8.8` produced four matching alerts.
 
-This validated:
+![First Suricata detection](screenshots/02a-module06-first-suricata-detection.png)
+
+This proved the first complete detection path:
 
 ```text
 packet capture
@@ -190,113 +209,105 @@ rule evaluation
     ↓
 signature match
     ↓
-EVE JSON alert generation
+EVE JSON alert
 ```
+
+### Capability demonstrated
+
+> Created, loaded, and validated a custom Suricata rule against known traffic.
 
 ---
 
-## 3. Passive Monitoring Design
+## 4. Build the Passive Monitoring Path
 
-The first ICMP test proved that Suricata could inspect traffic generated by NSM-01 itself, but that was not sufficient for a passive NSM sensor.
+The first ICMP test proved that Suricata could inspect traffic generated by NSM-01 itself, but a network sensor must also observe traffic generated by other systems.
 
-A second virtual NIC was therefore added:
+A second NSM-01 virtual NIC was added:
 
 ```text
-NSM-01 net1
-  ↓
-vmbr20
-  ↓
-ens19
-  ↓
-no IPv4 address
+net1 → vmbr20
+       ↓
+     ens19
+       ↓
+  no IPv4 address
 ```
 
 Suricata was moved from `ens18` to `ens19`.
 
-Simply attaching NSM-01 to the same Linux bridge did **not** guarantee observation of unrelated VM traffic. A deliberate mirror point was required.
+Simply placing NSM-01 on the same bridge was not enough. Proxmox had to copy the target traffic to the sensor.
 
-On the Proxmox host, ROUTER-01 vmbr20 traffic was mirrored from:
-
-```text
-tap104i0
-```
-
-to:
+The relevant tap mappings were:
 
 ```text
-tap105i1
+tap104i0 → ROUTER-01 net0 / vmbr20
+tap105i1 → NSM-01 net1 / vmbr20
 ```
 
-using Linux traffic control (`tc`).
+Linux traffic control (`tc`) was used to mirror ROUTER-01 vmbr20 ingress and egress traffic to NSM-01.
 
-The current runtime mirror configuration is preserved in:
+The current runtime configuration is preserved in:
 
 ```text
 configs/proxmox-vmbr20-mirror.sh
 ```
 
----
-
-## 4. Third-Party Passive Detection
-
-Linux-Mint generated:
+Linux-Mint then generated ICMP traffic:
 
 ```text
 10.10.20.11 → 10.10.20.1
-ICMP Echo Request
 ```
 
-NSM-01, monitoring the unaddressed `ens19` interface, generated the custom ICMP alert.
+Suricata on the unaddressed `ens19` interface detected the third-party traffic.
 
-This proved that the sensor could observe traffic generated by another system without being placed inline.
+![Passive mirrored Suricata detection](screenshots/02b-module06-passive-mirrored-detection.png)
 
-### Principle demonstrated
+### Principle
 
-> **Passive monitoring depends on observation-point placement, not merely on installing an IDS on the same subnet.**
+> Passive monitoring depends on the observation point. Installing an IDS on the same subnet does not guarantee visibility into unrelated traffic.
 
 ---
 
-## 5. Protocol-Aware Inspection
+## 5. Validate Protocol-Aware Inspection
 
 A controlled request was sent from Linux-Mint to ROUTER-01 TCP/22 using an HTTP-style client.
 
-The underlying TCP session was visible on `ens19`, including the SSH service response.
+Packet capture on `ens19` showed the TCP exchange and SSH service response.
 
-Suricata also produced application-layer anomaly telemetry because the observed protocol behavior did not match the expected service interaction.
+Suricata also generated application-layer anomaly telemetry because the observed application behavior did not match the expected service interaction.
 
-This demonstrated that NSM can inspect more than source/destination IP addresses and ports.
+This demonstrated that NSM can interpret protocol behavior rather than operating only on IP addresses and port numbers.
 
 ---
 
-## 6. Behavioral TCP SYN Detection
+## 6. Create a Behavior-Based TCP SYN Detection
 
-A behavior-oriented custom rule was added to identify rapid SYN activity from one source:
-
-### Initial rule
+A second custom rule was created to identify rapid TCP SYN activity from one source:
 
 ```text
 alert tcp any any -> any any (msg:"CYBER FORGE - TCP SYN Scan Threshold"; flags:S; flow:stateless; detection_filter:track by_src, count 10, seconds 5; sid:1000002; rev:1;)
 ```
 
-Linux-Mint generated controlled TCP connection attempts across 50 destination ports on ROUTER-01.
+Linux-Mint generated controlled connection attempts across 50 destination ports on ROUTER-01.
 
-Suricata successfully detected the activity, but the original rule generated repeated alerts after the threshold was crossed.
+The detection worked, but once the threshold was crossed the original rule produced repeated alerts.
 
-That produced a realistic detection-engineering problem:
+![Initial TCP SYN threshold detection](screenshots/03a-module06-tcp-syn-threshold-detection.png)
+
+That created a realistic detection-engineering problem:
 
 ```text
 Detection works
      ↓
-Too many duplicate alerts
+Duplicate alerts accumulate
      ↓
-Analyst noise
+Signal-to-noise decreases
      ↓
 Rule requires tuning
 ```
 
 ---
 
-## 7. Detection Tuning
+## 7. Tune the Detection and Retest the Same Behavior
 
 The rule was revised to use `threshold:type both`:
 
@@ -304,37 +315,45 @@ The rule was revised to use `threshold:type both`:
 alert tcp any any -> any any (msg:"CYBER FORGE - TCP SYN Scan Threshold"; flags:S; flow:stateless; threshold:type both, track by_src, count 10, seconds 5; sid:1000002; rev:2;)
 ```
 
-The exact same 50-port test was replayed.
+Before restarting Suricata, the configuration was validated:
 
-### Before
+```bash
+sudo suricata -T -c /etc/suricata/suricata.yaml
+```
 
-Multiple alerts were generated after the threshold was reached.
+The exact same 50-port behavior was replayed.
 
-### After
+### Before tuning
 
-One clean alert was generated for the scan window.
+The scan produced multiple duplicate alerts.
 
-### Principle demonstrated
+### After tuning
 
-> **A detection that technically works but overwhelms the analyst is not well tuned.**
+The same behavior produced one clean alert for the interval.
 
-The exercise validated a repeatable detection-engineering loop:
+![Tuned TCP SYN detection](screenshots/03b-module06-tuned-syn-detection.png)
+
+### Principle
+
+> A detection that technically works but overwhelms the analyst is not a well-tuned detection.
+
+The exercise demonstrated:
 
 ```text
 Detect
   ↓
-Measure noise
+Identify noise
   ↓
 Modify rule
   ↓
 Validate syntax
   ↓
-Replay same behavior
+Replay identical behavior
   ↓
 Compare result
 ```
 
-The active local rule file is preserved in:
+The current local rules are preserved in:
 
 ```text
 configs/suricata-local.rules
@@ -342,7 +361,7 @@ configs/suricata-local.rules
 
 ---
 
-## 8. Alert Investigation
+## 8. Investigate the TCP SYN Alert
 
 The tuned event identified:
 
@@ -358,35 +377,31 @@ Action:        allowed
 Sensor:        ens19
 ```
 
-Flow review showed rapid connections to multiple destination ports.
+Flow records showed rapid connections to many destination ports on one target.
 
-Most flows closed quickly, while TCP/22 showed additional bidirectional interaction consistent with the reachable SSH service observed earlier.
+Most probes closed quickly. TCP/22 showed additional bidirectional interaction, consistent with the reachable SSH service observed during protocol inspection.
 
-Preliminary disposition:
+### Preliminary disposition
 
-> **True Positive — Controlled Reconnaissance.** A single internal host generated rapid TCP SYN activity against multiple ports on ROUTER-01. The behavior exceeded the configured scan threshold and was detected by the passive NSM sensor. The activity was authorized as part of the Cyber Forge lab exercise; no containment was required.
+> **True Positive — Controlled Reconnaissance.** A single internal host generated rapid TCP SYN activity across multiple ports on ROUTER-01. The activity exceeded the configured scan threshold and was detected by the passive NSM sensor. The activity was authorized as part of the Cyber Forge lab exercise; no containment was required.
 
-The exact alert-window correlation write-up remains an open item before the Module 06 build gate is closed.
+The exact alert-window correlation write-up remains open before the Module 06 technical build gate is closed.
 
 ---
 
-## 9. Suricata → Wazuh Integration
+# Suricata → Wazuh Integration
 
-NSM-01 was enrolled into the existing Wazuh environment as:
+## 9. Enroll NSM-01 as Wazuh Agent 003
 
-```text
-Agent ID:   003
-Agent name: NSM-01
-Agent IP:   192.168.12.135
-```
+The Wazuh 4.14.8 agent was installed on NSM-01.
 
-The Wazuh agent was configured to collect:
+The agent was configured to collect:
 
 ```text
 /var/log/suricata/eve.json
 ```
 
-Configuration snippet:
+Configuration block:
 
 ```xml
 <localfile>
@@ -395,29 +410,96 @@ Configuration snippet:
 </localfile>
 ```
 
-The reusable snippet is preserved in:
+The first agent restart failed because the new `<localfile>` block had been placed outside an `<ossec_config>` section.
+
+After correcting the XML structure, both Wazuh configuration tests completed without errors:
+
+```bash
+sudo /var/ossec/bin/wazuh-logcollector -t
+sudo /var/ossec/bin/wazuh-agentd -t
+```
+
+![Wazuh agent configuration validation](screenshots/04a-module06-wazuh-agent-validation.png)
+
+The service then started successfully, including:
+
+```text
+wazuh-agentd
+wazuh-syscheckd
+wazuh-logcollector
+wazuh-modulesd
+```
+
+The agent log confirmed:
+
+```text
+Analyzing file: '/var/log/suricata/eve.json'
+```
+
+The reusable collection block is preserved in:
 
 ```text
 configs/wazuh-suricata-localfile.xml
 ```
 
-After a fresh controlled scan, Wazuh Threat Hunting displayed the Suricata event with:
+---
+
+## 10. Validate Suricata Alert Ingestion in Wazuh
+
+A fresh controlled SYN-scan test was generated after the Wazuh agent was online.
+
+Wazuh Threat Hunting returned the Suricata alert under:
 
 ```text
-agent.name              NSM-01
-data.src_ip             10.10.20.11
-data.dest_ip            10.10.20.1
-data.proto              TCP
-data.in_iface           ens19
-data.alert.signature    CYBER FORGE - TCP SYN Scan Threshold
-data.alert.signature_id 1000002
-rule.id                 86601
-rule.groups             ids, suricata
-rule.level              3
-rule.firedtimes         1
+rule.groups: suricata
 ```
 
-This validated the end-to-end monitoring path:
+![Suricata alert ingested into Wazuh](screenshots/04b-module06-suricata-wazuh-integration.png)
+
+The visible event confirmed:
+
+```text
+agent.name        NSM-01
+rule.description  Suricata: Alert - CYBER FORGE - TCP SYN Scan Threshold
+rule.level        3
+rule.id           86601
+```
+
+### Capability demonstrated
+
+> Proved that Suricata EVE JSON telemetry could traverse the full NSM → Wazuh pipeline and appear in the analyst-facing Threat Hunting interface.
+
+---
+
+## 11. Inspect the Suricata Event in Wazuh
+
+The Wazuh document detail view exposed the original Suricata fields.
+
+![Wazuh Suricata alert details](screenshots/04c-module06-wazuh-alert-details.png)
+
+Validated fields included:
+
+```text
+agent.id                 003
+agent.ip                 192.168.12.135
+agent.name               NSM-01
+data.alert.action        allowed
+data.alert.rev           2
+data.alert.severity      3
+data.alert.signature     CYBER FORGE - TCP SYN Scan Threshold
+data.alert.signature_id  1000002
+data.src_ip              10.10.20.11
+data.dest_ip             10.10.20.1
+data.dest_port           8
+data.in_iface            ens19
+data.proto               TCP
+rule.groups              ids, suricata
+rule.id                  86601
+rule.level               3
+rule.firedtimes          1
+```
+
+This validated the complete path:
 
 ```text
 Linux-Mint
@@ -432,30 +514,32 @@ Suricata
    ↓
 eve.json
    ↓
-Wazuh Agent
+Wazuh Agent 003
    ↓
 Wazuh Manager
    ↓
-Threat Hunting Dashboard
+Threat Hunting
+   ↓
+Field-level investigation
 ```
 
 ---
 
-## 10. Troubleshooting Cases
+# Troubleshooting & Lessons Learned
 
-### Suricata referenced the wrong capture interface
+## Suricata referenced the wrong capture interface
 
 **Symptom:** Suricata failed to start.
 
-**Root cause:** Configuration referenced `eth0`; NSM-01 used predictable interface names.
+**Root cause:** The configuration referenced `eth0`; NSM-01 used predictable interface names.
 
 **Resolution:** Corrected only the AF_PACKET capture interface and validated with `suricata -T`.
 
-**Lesson:** Do not perform a global interface-name replacement when only one capture stanza is wrong.
+**Lesson:** Avoid global configuration replacement when the fault is isolated to one stanza.
 
 ---
 
-### Custom rule file was accidentally contaminated
+## Custom rule file was accidentally contaminated
 
 **Symptom:**
 
@@ -463,15 +547,15 @@ Threat Hunting Dashboard
 detect-parse: An invalid action "af-packet:" was given
 ```
 
-**Root cause:** Part of the Suricata YAML AF_PACKET configuration was accidentally pasted into `local.rules`.
+**Root cause:** Part of the YAML AF_PACKET configuration was accidentally pasted into `local.rules`.
 
-**Resolution:** Rebuilt `local.rules` with only valid Suricata signatures and revalidated before restart.
+**Resolution:** Rebuilt `local.rules` with only valid signatures and validated the Suricata configuration before restart.
 
-**Lesson:** Configuration syntax validation should happen before every service restart after rule changes.
+**Lesson:** Syntax validation should precede service restart after detection-rule changes.
 
 ---
 
-### Wazuh agent failed after adding Suricata collection
+## Wazuh rejected the Suricata localfile configuration
 
 **Symptom:**
 
@@ -479,44 +563,39 @@ detect-parse: An invalid action "af-packet:" was given
 Invalid element in the configuration: 'localfile'
 ```
 
-**Root cause:** The Suricata `<localfile>` block was placed outside an `<ossec_config>` section.
+**Root cause:** The Suricata `<localfile>` block was outside the active `<ossec_config>` section.
 
-**Resolution:** Moved the block inside the active Wazuh configuration section and validated with:
+**Resolution:** Moved the block inside the Wazuh XML structure and tested both `wazuh-logcollector` and `wazuh-agentd` before restarting the agent.
 
-```bash
-sudo /var/ossec/bin/wazuh-logcollector -t
-sudo /var/ossec/bin/wazuh-agentd -t
-```
-
-**Lesson:** Structured configuration should be syntax-tested before restarting a telemetry agent.
+**Lesson:** A telemetry integration is not complete until both configuration parsing and event flow are validated.
 
 ---
 
-## 11. Current Temporary / Nonpersistent State
+# Current Temporary / Nonpersistent State
 
-The following items are intentionally still runtime-only:
+Two pieces of the monitoring path remain intentionally runtime-only.
 
-### NSM monitoring NIC state
+### NSM monitoring NIC
 
 ```bash
 sudo ip link set ens19 up
 ```
 
-This state may be lost when NSM-01 reboots unless it is made persistent through the guest network configuration.
+The `ens19` UP state may be lost after an NSM-01 reboot until it is made persistent through guest networking.
 
 ### Proxmox traffic mirror
 
 The current `tc` mirror configuration is runtime-only.
 
-It should be treated as lost after a Proxmox reboot and revalidated after relevant VM/tap-interface recreation.
+It should be revalidated/reapplied after a Proxmox reboot or relevant VM/tap-interface recreation.
 
-These are tracked as finalization tasks rather than hidden assumptions.
+These are tracked as open build items rather than silently treated as permanent.
 
 ---
 
-## 12. Evidence Captured
+# Evidence Status
 
-The following evidence was captured during the current Module 06 build:
+The current Module 06 build evidence is now embedded throughout this README at the stage where each validation occurred:
 
 ```text
 01a-module06-proxmox-capacity-preflight.png
@@ -529,31 +608,29 @@ The following evidence was captured during the current Module 06 build:
 04c-module06-wazuh-alert-details.png
 ```
 
-The screenshots are retained as the portfolio evidence set for the current checkpoint.
+The screenshot is the evidence; the surrounding explanation records what was being tested, what the result proved, and why it matters.
 
 ---
 
-## 13. Skills Demonstrated
+# Skills Demonstrated
 
 Module 06 work to date demonstrates practical experience with:
 
-- Suricata IDS/NSM deployment;
+- Suricata IDS / NSM deployment;
 - AF_PACKET capture configuration;
-- Suricata rule management;
 - Emerging Threats Open rules;
 - EVE JSON telemetry;
 - custom Suricata signatures;
 - ICMP detection;
-- TCP SYN behavior detection;
-- threshold-based detection logic;
-- alert-noise reduction;
+- behavior-based TCP SYN detection;
+- threshold tuning and alert-noise reduction;
 - repeatable before/after detection testing;
 - passive monitoring architecture;
 - dual-NIC sensor design;
 - Proxmox Linux bridges;
 - Linux `tc` traffic mirroring;
-- passive third-party packet observation;
-- `tcpdump` packet validation;
+- third-party packet observation;
+- `tcpdump` validation;
 - protocol-aware NSM interpretation;
 - flow and alert correlation;
 - Wazuh agent enrollment;
@@ -564,22 +641,22 @@ Module 06 work to date demonstrates practical experience with:
 
 ---
 
-## 14. Remaining Module Work
+# Remaining Module Work
 
 Before the Module 06 technical build gate is complete:
 
-1. Complete the exact alert-window analyst investigation.
-2. Perform a controlled monitoring/telemetry visibility failure.
-3. Demonstrate the blind spot while the monitoring path is broken.
+1. Complete the exact alert-window analyst correlation.
+2. Perform a controlled monitoring-path / telemetry visibility failure.
+3. Demonstrate the blind spot while visibility is broken.
 4. Restore the monitoring path and prove detection returns.
 5. Make the passive monitoring NIC state persistent.
 6. Make the Proxmox traffic mirror persistent or replace it with a documented durable mechanism.
-7. Reboot/revalidate the final monitoring path.
-8. Capture final evidence and close the technical build gate.
+7. Reboot and revalidate the final monitoring path.
+8. Capture the final evidence and close the technical build gate.
 
 ---
 
-## Current Module State
+# Current Module State
 
 ```text
 Dedicated NSM sensor deployed            ✓
@@ -591,6 +668,7 @@ Behavior-based SYN detection              ✓
 Alert-noise tuning                        ✓
 Suricata → Wazuh integration              ✓
 Threat Hunting visibility                 ✓
+Inline build evidence                     ✓
 Exact alert-window investigation          IN PROGRESS
 Controlled visibility-failure test        PENDING
 Monitoring-path persistence               PENDING
