@@ -618,6 +618,7 @@ The current Module 06 build evidence is now embedded throughout this README at t
 04a-module06-wazuh-agent-validation.webp
 04b-module06-suricata-wazuh-integration.webp
 04c-module06-wazuh-alert-details.webp
+04d-module06-wazuh-rule-classification.webp
 ```
 
 The screenshot is the evidence; the surrounding explanation records what was being tested, what the result proved, and why it matters.
