@@ -1,6 +1,6 @@
 # CyberBlue — Module 06
 
-![CyberBlue Module 06 — Network Security Monitoring](assets/module-banner.svg)
+![CyberBlue Module 06 — Network Security Monitoring](assets/module-banner.webp)
 
 ## Network Security Monitoring
 
@@ -120,7 +120,7 @@ Suricata listens on `ens19`, keeping the management plane and passive monitoring
 
 Before introducing another security workload, I reviewed the Proxmox host for available memory, storage, and active VM pressure.
 
-![Module 06 Proxmox capacity preflight](screenshots/01a-module06-proxmox-capacity-preflight.png)
+![Module 06 Proxmox capacity preflight](screenshots/01a-module06-proxmox-capacity-preflight.webp)
 
 The host had sufficient memory headroom to proceed, and the guest filesystem review from the previous SIEM work confirmed that the Wazuh data footprint was legitimate rather than an immediate storage fault.
 
@@ -198,7 +198,7 @@ alert icmp any any -> any any (msg:"CYBER FORGE - ICMP Detection Test"; itype:8;
 
 Controlled ICMP traffic from NSM-01 to `8.8.8.8` produced four matching alerts.
 
-![First Suricata detection](screenshots/02a-module06-first-suricata-detection.png)
+![First Suricata detection](screenshots/02a-module06-first-suricata-detection.webp)
 
 This proved the first complete detection path:
 
@@ -259,7 +259,7 @@ Linux-Mint then generated ICMP traffic:
 
 Suricata on the unaddressed `ens19` interface detected the third-party traffic.
 
-![Passive mirrored Suricata detection](screenshots/02b-module06-passive-mirrored-detection.png)
+![Passive mirrored Suricata detection](screenshots/02b-module06-passive-mirrored-detection.webp)
 
 ### Principle
 
@@ -291,7 +291,7 @@ Linux-Mint generated controlled connection attempts across 50 destination ports 
 
 The detection worked, but once the threshold was crossed the original rule produced repeated alerts.
 
-![Initial TCP SYN threshold detection](screenshots/03a-module06-tcp-syn-threshold-detection.png)
+![Initial TCP SYN threshold detection](screenshots/03a-module06-tcp-syn-threshold-detection.webp)
 
 That created a realistic detection-engineering problem:
 
@@ -331,7 +331,7 @@ The scan produced multiple duplicate alerts.
 
 The same behavior produced one clean alert for the interval.
 
-![Tuned TCP SYN detection](screenshots/03b-module06-tuned-syn-detection.png)
+![Tuned TCP SYN detection](screenshots/03b-module06-tuned-syn-detection.webp)
 
 ### Principle
 
@@ -419,7 +419,7 @@ sudo /var/ossec/bin/wazuh-logcollector -t
 sudo /var/ossec/bin/wazuh-agentd -t
 ```
 
-![Wazuh agent configuration validation](screenshots/04a-module06-wazuh-agent-validation.png)
+![Wazuh agent configuration validation](screenshots/04a-module06-wazuh-agent-validation.webp)
 
 The service then started successfully, including:
 
@@ -454,7 +454,7 @@ Wazuh Threat Hunting returned the Suricata alert under:
 rule.groups: suricata
 ```
 
-![Suricata alert ingested into Wazuh](screenshots/04b-module06-suricata-wazuh-integration.png)
+![Suricata alert ingested into Wazuh](screenshots/04b-module06-suricata-wazuh-integration.webp)
 
 The visible event confirmed:
 
@@ -475,7 +475,9 @@ rule.id           86601
 
 The Wazuh document detail view exposed the original Suricata fields.
 
-![Wazuh Suricata alert details](screenshots/04c-module06-wazuh-alert-details.png)
+![Wazuh Suricata alert details](screenshots/04c-module06-wazuh-alert-details.webp)
+
+![Wazuh Suricata rule classification](screenshots/04d-module06-wazuh-rule-classification.webp)
 
 Validated fields included:
 
@@ -498,6 +500,16 @@ rule.id                  86601
 rule.level               3
 rule.firedtimes          1
 ```
+
+The rule-classification evidence confirms that Wazuh parsed the Suricata event under the expected security groups and rule:
+
+```text
+rule.groups  ids, suricata
+rule.id      86601
+rule.level   3
+```
+
+This provides a second layer of validation: the event was not merely transported to Wazuh; it was recognized and classified as Suricata/IDS telemetry.
 
 This validated the complete path:
 
@@ -598,14 +610,14 @@ These are tracked as open build items rather than silently treated as permanent.
 The current Module 06 build evidence is now embedded throughout this README at the stage where each validation occurred:
 
 ```text
-01a-module06-proxmox-capacity-preflight.png
-02a-module06-first-suricata-detection.png
-02b-module06-passive-mirrored-detection.png
-03a-module06-tcp-syn-threshold-detection.png
-03b-module06-tuned-syn-detection.png
-04a-module06-wazuh-agent-validation.png
-04b-module06-suricata-wazuh-integration.png
-04c-module06-wazuh-alert-details.png
+01a-module06-proxmox-capacity-preflight.webp
+02a-module06-first-suricata-detection.webp
+02b-module06-passive-mirrored-detection.webp
+03a-module06-tcp-syn-threshold-detection.webp
+03b-module06-tuned-syn-detection.webp
+04a-module06-wazuh-agent-validation.webp
+04b-module06-suricata-wazuh-integration.webp
+04c-module06-wazuh-alert-details.webp
 ```
 
 The screenshot is the evidence; the surrounding explanation records what was being tested, what the result proved, and why it matters.
