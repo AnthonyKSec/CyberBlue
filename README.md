@@ -113,6 +113,15 @@ Current CyberBlue work demonstrates practical experience with:
 - SIEM administrative credential hardening
 - Direct API authentication validation
 - Docker service-exposure hardening
+- Suricata IDS / network security monitoring
+- AF_PACKET passive packet capture
+- Proxmox traffic mirroring with Linux tc
+- Custom Suricata signature development
+- Behavior-based TCP SYN detection
+- Detection threshold tuning and alert-noise reduction
+- EVE JSON analysis
+- Suricata-to-Wazuh SIEM integration
+- Wazuh Threat Hunting for network alerts
 
 As additional modules are completed, this repository will expand into endpoint telemetry, SIEM, network monitoring, vulnerability management, detection engineering, incident response, threat hunting, SOAR, cloud security operations, and purple-team validation.
 
@@ -126,8 +135,9 @@ As additional modules are completed, this repository will expand into endpoint t
 | [Module 03 — Virtual Networking & Segmentation](modules/module-03-virtual-networking-segmentation/README.md) | Layer-3 routing, persistent routes, packet tracing, return-path troubleshooting, and segmentation policy | **BUILD COMPLETE ✓** |
 | [Module 04 — Endpoint Telemetry & Logging](modules/module-04-endpoint-telemetry-logging/README.md) | Native and enhanced endpoint telemetry, Sysmon, auditd, visibility-gap testing, and telemetry recovery | **BUILD COMPLETE ✓** |
 | [Module 05 — Centralized Logging & SIEM Foundations](modules/module-05-centralized-logging-siem/README.md) | Wazuh SIEM deployment, agent enrollment, Sysmon/Linux telemetry correlation, least-privilege transport, and ingestion failure/recovery validation | **BUILD COMPLETE ✓** |
+| [Module 06 — Network Security Monitoring](modules/module-06-network-security-monitoring/README.md) | Passive Suricata monitoring, traffic mirroring, custom detection, rule tuning, and Wazuh SIEM integration | **IN PROGRESS** |
 
-Modules 03, 04, and 05 have completed their technical build gates. Deeper knowledge review remains tracked separately and will be revisited after the wider Cyber Forge range is built.
+Modules 03, 04, and 05 have completed their technical build gates. Module 06 is actively in progress and has reached end-to-end passive NSM → SIEM validation. Deeper knowledge review remains tracked separately and will be revisited after the wider Cyber Forge range is built.
 
 ---
 
@@ -240,6 +250,54 @@ Completed work includes:
 
 ---
 
+## Module 06 — Network Security Monitoring
+
+Module 06 is currently **in progress** and introduces passive network-security-monitoring capability to Cyber Forge.
+
+Validated work so far includes:
+
+```text
+[✓] NSM-01 deployed as VM 105
+[✓] Suricata 7.0.3 installed and validated
+[✓] Emerging Threats Open rules loaded
+[✓] Dedicated passive monitoring NIC on vmbr20
+[✓] Proxmox traffic mirroring configured
+[✓] Third-party passive traffic visibility proven
+[✓] Custom ICMP detection validated
+[✓] TCP SYN behavioral threshold detection validated
+[✓] Noisy threshold behavior reproduced
+[✓] Detection tuned and same behavior retested
+[✓] NSM-01 enrolled in Wazuh as Agent 003
+[✓] Suricata eve.json ingestion into Wazuh validated
+[✓] Suricata TCP SYN alert visible in Threat Hunting
+[ ] Controlled NSM visibility-failure/recovery test
+[ ] Passive monitoring persistence hardening
+[ ] Post-reboot validation
+[ ] Technical Build Gate
+```
+
+The current validated pipeline is:
+
+```text
+Mirrored lab traffic
+      ↓
+NSM-01 / ens19
+      ↓
+Suricata
+      ↓
+eve.json
+      ↓
+Wazuh Agent
+      ↓
+Wazuh Manager
+      ↓
+Threat Hunting Dashboard
+```
+
+**[View Module 06 documentation →](modules/module-06-network-security-monitoring/README.md)**
+
+---
+
 ## Current Lab Status
 
 ```text
@@ -280,9 +338,20 @@ Completed work includes:
 [✓] Controlled SIEM ingestion outage and recovery validated
 [✓] Buffered outage telemetry backfilled
 [✓] Module 05 technical Build Gate completed
+[✓] NSM-01 passive Suricata sensor deployed
+[✓] vmbr20 third-party traffic mirroring validated
+[✓] Custom ICMP detection validated
+[✓] TCP SYN scan behavior detected
+[✓] Suricata alert-noise tuning validated
+[✓] NSM-01 enrolled in Wazuh
+[✓] Suricata EVE JSON ingestion into Wazuh validated
+[✓] Suricata network alert visible in Wazuh Threat Hunting
+[ ] Module 06 controlled visibility-failure/recovery validation
+[ ] Module 06 monitoring-path persistence
+[ ] Module 06 technical Build Gate
 ```
 
-The current range has completed the **Module 05 technical Build Gate**. Cyber Forge now has centralized Linux and Windows telemetry, known-event correlation, policy-controlled SIEM transport, and validated ingestion failure/recovery behavior.
+The current range has completed the **Module 05 technical Build Gate** and is actively building **Module 06 — Network Security Monitoring**. Cyber Forge now has centralized endpoint telemetry plus a validated passive Suricata → Wazuh pipeline for network detection and Threat Hunting. Module 06 persistence and controlled visibility-failure testing remain open before its technical build gate can be closed.
 
 ---
 
