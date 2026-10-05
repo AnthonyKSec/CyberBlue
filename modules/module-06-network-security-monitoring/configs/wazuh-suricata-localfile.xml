@@ -1,0 +1,7 @@
+<!-- Cyber Forge Module 06 — Suricata EVE JSON collection -->
+<!-- Place this block inside an active <ossec_config> section on NSM-01. -->
+
+<localfile>
+  <log_format>json</log_format>
+  <location>/var/log/suricata/eve.json</location>
+</localfile>
