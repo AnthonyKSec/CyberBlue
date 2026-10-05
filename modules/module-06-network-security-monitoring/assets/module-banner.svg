@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#020814"/>
+      <stop offset="0.55" stop-color="#06142a"/>
+      <stop offset="1" stop-color="#020711"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#32c8ff"/>
+      <stop offset="1" stop-color="#0074ff"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#0a2c4c" stroke-width="1" opacity=".35"/>
+    </pattern>
+    <style>
+      .small{font:600 28px 'Arial',sans-serif;letter-spacing:8px;fill:#37bfff}
+      .module{font:900 78px 'Arial Black','Arial',sans-serif;letter-spacing:5px;fill:#eef7ff}
+      .num{fill:url(#blue)}
+      .title{font:900 58px 'Arial Black','Arial',sans-serif;letter-spacing:2px;fill:#f5f9ff}
+      .sub{font:600 30px 'Arial',sans-serif;fill:#3dbbff;letter-spacing:1px}
+      .boxTitle{font:800 27px 'Arial',sans-serif;fill:#4cc8ff}
+      .boxBody{font:600 20px 'Arial',sans-serif;fill:#d6e7f7}
+      .label{font:700 17px 'Arial',sans-serif;fill:#77d8ff}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#grid)" opacity=".55"/>
+  <path d="M0 115H390L470 45H1130L1210 115H1600" fill="none" stroke="#0a8cff" stroke-width="2" opacity=".65"/>
+  <path d="M0 830H330L390 770H1210L1270 830H1600" fill="none" stroke="#0a8cff" stroke-width="2" opacity=".45"/>
+
+  <!-- shield mark -->
+  <g transform="translate(75 110)" filter="url(#glow)">
+    <path d="M95 0L180 35V110c0 70-42 126-85 151C52 236 10 180 10 110V35Z" fill="#04142b" stroke="#25bfff" stroke-width="6"/>
+    <path d="M95 42L135 92 112 89 145 130 111 121 129 168 93 133 64 173 76 125 42 137 74 91 49 96Z" fill="#2ac8ff"/>
+  </g>
+
+  <text x="800" y="55" text-anchor="middle" class="small">CYBERBLUE • CYBER FORGE</text>
+  <text x="800" y="155" text-anchor="middle" class="module">MODULE <tspan class="num">06</tspan></text>
+  <text x="800" y="252" text-anchor="middle" class="title">NETWORK SECURITY MONITORING</text>
+  <text x="800" y="306" text-anchor="middle" class="sub">Suricata • Passive Monitoring • Wazuh Integration</text>
+
+  <!-- flow -->
+  <g filter="url(#glow)">
+    <rect x="80" y="425" width="290" height="185" rx="18" fill="#061224" stroke="#169dff" stroke-width="3"/>
+    <rect x="455" y="425" width="290" height="185" rx="18" fill="#061224" stroke="#169dff" stroke-width="3"/>
+    <rect x="830" y="425" width="290" height="185" rx="18" fill="#061224" stroke="#169dff" stroke-width="3"/>
+    <rect x="1205" y="425" width="315" height="185" rx="18" fill="#061224" stroke="#169dff" stroke-width="3"/>
+  </g>
+
+  <text x="225" y="475" text-anchor="middle" class="boxTitle">MIRRORED TRAFFIC</text>
+  <text x="225" y="516" text-anchor="middle" class="boxBody">Linux-Mint → ROUTER-01</text>
+  <text x="225" y="548" text-anchor="middle" class="boxBody">vmbr20 / Proxmox tc</text>
+  <text x="225" y="580" text-anchor="middle" class="label">Observation Point</text>
+
+  <text x="600" y="475" text-anchor="middle" class="boxTitle">NSM-01</text>
+  <text x="600" y="516" text-anchor="middle" class="boxBody">ens19 • Passive NIC</text>
+  <text x="600" y="548" text-anchor="middle" class="boxBody">No IPv4 Address</text>
+  <text x="600" y="580" text-anchor="middle" class="label">Packet Visibility</text>
+
+  <text x="975" y="475" text-anchor="middle" class="boxTitle">SURICATA</text>
+  <text x="975" y="516" text-anchor="middle" class="boxBody">Rules • Flow • EVE JSON</text>
+  <text x="975" y="548" text-anchor="middle" class="boxBody">SYN Scan Threshold</text>
+  <text x="975" y="580" text-anchor="middle" class="label">Detection & Tuning</text>
+
+  <text x="1362" y="475" text-anchor="middle" class="boxTitle">WAZUH</text>
+  <text x="1362" y="516" text-anchor="middle" class="boxBody">Agent 003 • Rule 86601</text>
+  <text x="1362" y="548" text-anchor="middle" class="boxBody">Threat Hunting</text>
+  <text x="1362" y="580" text-anchor="middle" class="label">Central Investigation</text>
+
+  <!-- arrows -->
+  <g stroke="#35c9ff" stroke-width="6" fill="none" filter="url(#glow)">
+    <path d="M370 518H445"/><path d="M430 505L445 518 430 531"/>
+    <path d="M745 518H820"/><path d="M805 505L820 518 805 531"/>
+    <path d="M1120 518H1195"/><path d="M1180 505L1195 518 1180 531"/>
+  </g>
+
+  <rect x="325" y="690" width="950" height="82" rx="12" fill="#041426" stroke="#0d75c8" stroke-width="2"/>
+  <text x="800" y="726" text-anchor="middle" class="boxBody">TRAFFIC → VISIBILITY → DETECTION → TUNING → SIEM → INVESTIGATION</text>
+  <text x="800" y="758" text-anchor="middle" class="label">BUILD • SIMULATE • DETECT • INVESTIGATE • DOCUMENT • REPEAT</text>
+</svg>
