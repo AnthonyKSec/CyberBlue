@@ -1,0 +1,8 @@
+network:
+  version: 2
+  ethernets:
+    ens19:
+      dhcp4: false
+      dhcp6: false
+      link-local: []
+      optional: true

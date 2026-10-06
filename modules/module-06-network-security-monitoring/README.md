@@ -4,8 +4,8 @@
 
 ## Network Security Monitoring
 
-**Status:** WORK IN PROGRESS  
-**Current checkpoint:** Passive NSM, behavioral detection tuning, and Suricata → Wazuh integration validated  
+**Status:** BUILD COMPLETE ✓  
+**Current checkpoint:** Technical Build Gate passed — passive NSM, detection tuning, SIEM integration, controlled visibility failure/recovery, and post-reboot persistence validated  
 **Platform:** Proxmox VE 9.2.2  
 **NSM implementation:** Suricata 7.0.3 on VM105 — NSM-01  
 **SIEM integration:** Wazuh 4.14.8  
@@ -66,7 +66,7 @@ Module 06 therefore validates:
 
 ---
 
-# Final Architecture — Current Checkpoint
+# Final Architecture — Qualified State
 
 ```text
                          MANAGEMENT LAN
@@ -245,7 +245,7 @@ tap105i1 → NSM-01 net1 / vmbr20
 
 Linux traffic control (`tc`) was used to mirror ROUTER-01 vmbr20 ingress and egress traffic to NSM-01.
 
-The current runtime configuration is preserved in:
+The persistent mirror implementation is preserved in:
 
 ```text
 configs/proxmox-vmbr20-mirror.sh
@@ -385,7 +385,9 @@ Most probes closed quickly. TCP/22 showed additional bidirectional interaction, 
 
 > **True Positive — Controlled Reconnaissance.** A single internal host generated rapid TCP SYN activity across multiple ports on ROUTER-01. The activity exceeded the configured scan threshold and was detected by the passive NSM sensor. The activity was authorized as part of the Cyber Forge lab exercise; no containment was required.
 
-The exact alert-window correlation write-up remains open before the Module 06 technical build gate is closed.
+### Analyst finding
+
+> **True Positive — Controlled Reconnaissance.** Alert and flow correlation showed a single internal source, `10.10.20.11`, generating rapid TCP SYN activity across multiple destination ports on `10.10.20.1`. The behavior crossed the configured threshold and was detected by the passive NSM sensor. The traffic was authorized lab activity, so no containment was required. The evidence supports the detection as a valid scan/reconnaissance signal rather than a false positive.
 
 ---
 
@@ -537,6 +539,165 @@ Field-level investigation
 
 ---
 
+# Controlled Visibility Failure, Recovery & Persistence Qualification
+
+## 12. Prove the Post-Reboot Blind Spot
+
+A full Proxmox host shutdown/restart was used as the controlled failure condition.
+
+After the first restart:
+
+- Suricata was **active**;
+- the Wazuh agent was **active**;
+- `ens19` was **DOWN**; and
+- the Proxmox `tc` mirror filters were absent.
+
+![Post-reboot monitoring-path failure](screenshots/05a-module06-post-reboot-monitoring-path-failure.webp)
+
+This demonstrated an important NSM principle:
+
+> **A healthy security service does not guarantee healthy telemetry.**
+
+The same controlled TCP SYN behavior was replayed while the monitoring path was broken. The latest Suricata alert timestamp remained unchanged before and after the test.
+
+![Blind-spot validation](screenshots/05b-module06-blind-spot-validation.webp)
+
+That proved a real visibility gap:
+
+```text
+Traffic generated
+      ↓
+ROUTER-01 receives it
+      ↓
+Mirror absent + ens19 down
+      ↓
+Suricata service still healthy
+      ↓
+No new alert
+```
+
+### Capability demonstrated
+
+> Distinguished service availability from telemetry-path availability and proved the blind spot with a repeatable test.
+
+---
+
+## 13. Restore the Monitoring Path
+
+The passive interface was made persistent with Netplan:
+
+```yaml
+network:
+  version: 2
+  ethernets:
+    ens19:
+      dhcp4: false
+      dhcp6: false
+      link-local: []
+      optional: true
+```
+
+The reusable configuration is preserved in:
+
+```text
+configs/99-nsm-monitor.yaml
+```
+
+The Proxmox mirror was rebuilt using an idempotent script that waits for both tap devices, removes any stale `clsact` state, and recreates ingress and egress mirroring.
+
+The mirror was then managed by systemd:
+
+```text
+cyberforge-vmbr20-mirror.service
+```
+
+The reusable files are preserved in:
+
+```text
+configs/proxmox-vmbr20-mirror.sh
+configs/cyberforge-vmbr20-mirror.service
+```
+
+After restoring the path, the exact same SYN behavior produced a fresh Suricata alert.
+
+![Monitoring-path recovery](screenshots/05c-module06-monitoring-path-recovery.webp)
+
+### Principle
+
+> Recovery is not proven by configuration state alone. The original behavior must be replayed and detected again.
+
+---
+
+## 14. Validate Persistence Across a Full Host Reboot
+
+The required infrastructure VMs were configured to start automatically:
+
+```text
+VM 104 — ROUTER-01   startup order 1
+VM 105 — NSM-01      startup order 2
+VM 100 — Ubuntu-SOC  startup order 3
+```
+
+The mirror service was enabled at boot.
+
+After a full Proxmox reboot, without manually bringing up `ens19` or manually running the mirror script:
+
+- `ens19` returned **UP** with no IP address;
+- Suricata returned **active**;
+- the Wazuh agent returned **active**;
+- the mirror service returned **active (exited)**;
+- ingress mirroring returned automatically; and
+- egress mirroring returned automatically.
+
+![Post-reboot persistence validation](screenshots/05d-module06-post-reboot-persistence-validation.webp)
+
+The same controlled SYN activity was then replayed from Linux-Mint.
+
+A new post-reboot Suricata alert was generated:
+
+```text
+timestamp:  2026-10-06T01:06:24.649565+0000
+src_ip:     10.10.20.11
+dest_ip:    10.10.20.1
+signature:  CYBER FORGE - TCP SYN Scan Threshold
+```
+
+![Post-reboot Suricata detection](screenshots/05e-module06-post-reboot-detection-validation.webp)
+
+Wazuh Threat Hunting then displayed the corresponding fresh Suricata event under rule `86601`.
+
+![Post-reboot Wazuh validation](screenshots/05f-module06-post-reboot-wazuh-validation.webp)
+
+This completed the final qualification path:
+
+```text
+PVE reboot
+   ↓
+Infrastructure VM autostart
+   ↓
+Passive NIC restored
+   ↓
+Traffic mirror restored
+   ↓
+Suricata active
+   ↓
+Wazuh agent active
+   ↓
+Controlled behavior replayed
+   ↓
+Fresh Suricata detection
+   ↓
+Fresh Wazuh event
+   ↓
+Analyst visibility restored
+```
+
+### Qualification result
+
+> **PASS — Module 06 monitoring capability survives a host reboot and automatically restores passive traffic visibility, Suricata detection, Wazuh ingestion, and analyst-facing event visibility.**
+
+---
+
 # Troubleshooting & Lessons Learned
 
 ## Suricata referenced the wrong capture interface
@@ -583,25 +744,40 @@ Invalid element in the configuration: 'localfile'
 
 ---
 
-# Current Temporary / Nonpersistent State
+# Persistence Remediation
 
-Two pieces of the monitoring path remain intentionally runtime-only.
+The runtime-only conditions discovered during testing were corrected and validated.
 
-### NSM monitoring NIC
+### Passive monitoring interface
 
-```bash
-sudo ip link set ens19 up
+`ens19` is now managed persistently through:
+
+```text
+/etc/netplan/99-nsm-monitor.yaml
 ```
 
-The `ens19` UP state may be lost after an NSM-01 reboot until it is made persistent through guest networking.
+The interface comes up automatically without DHCP, IPv6 autoconfiguration, or link-local addressing.
 
 ### Proxmox traffic mirror
 
-The current `tc` mirror configuration is runtime-only.
+The traffic mirror is now rebuilt automatically by:
 
-It should be revalidated/reapplied after a Proxmox reboot or relevant VM/tap-interface recreation.
+```text
+/usr/local/sbin/cyberforge-vmbr20-mirror.sh
+/etc/systemd/system/cyberforge-vmbr20-mirror.service
+```
 
-These are tracked as open build items rather than silently treated as permanent.
+The service waits for both `tap104i0` and `tap105i1` before creating the mirror and is enabled at boot.
+
+### Infrastructure startup ordering
+
+```text
+ROUTER-01   VM 104 → order 1
+NSM-01      VM 105 → order 2
+Ubuntu-SOC  VM 100 → order 3
+```
+
+A full host reboot confirmed that the complete monitoring path returns automatically.
 
 ---
 
@@ -619,6 +795,12 @@ The current Module 06 build evidence is now embedded throughout this README at t
 04b-module06-suricata-wazuh-integration.webp
 04c-module06-wazuh-alert-details.webp
 04d-module06-wazuh-rule-classification.webp
+05a-module06-post-reboot-monitoring-path-failure.webp
+05b-module06-blind-spot-validation.webp
+05c-module06-monitoring-path-recovery.webp
+05d-module06-post-reboot-persistence-validation.webp
+05e-module06-post-reboot-detection-validation.webp
+05f-module06-post-reboot-wazuh-validation.webp
 ```
 
 The screenshot is the evidence; the surrounding explanation records what was being tested, what the result proved, and why it matters.
@@ -650,22 +832,38 @@ Module 06 work to date demonstrates practical experience with:
 - Suricata-to-Wazuh log ingestion;
 - Wazuh Threat Hunting;
 - SIEM field-level investigation; and
-- evidence-driven troubleshooting.
+- evidence-driven troubleshooting;
+- monitoring-path failure analysis;
+- telemetry blind-spot validation;
+- Netplan persistence for an unaddressed monitoring NIC;
+- systemd-managed Proxmox traffic mirroring;
+- infrastructure VM startup sequencing; and
+- post-reboot NSM/SIEM qualification.
 
 ---
 
-# Remaining Module Work
+# Technical Build Gate
 
-Before the Module 06 technical build gate is complete:
+Module 06 technical qualification criteria were completed:
 
-1. Complete the exact alert-window analyst correlation.
-2. Perform a controlled monitoring-path / telemetry visibility failure.
-3. Demonstrate the blind spot while visibility is broken.
-4. Restore the monitoring path and prove detection returns.
-5. Make the passive monitoring NIC state persistent.
-6. Make the Proxmox traffic mirror persistent or replace it with a documented durable mechanism.
-7. Reboot and revalidate the final monitoring path.
-8. Capture the final evidence and close the technical build gate.
+1. Dedicated passive NSM sensor deployed.
+2. Intended third-party traffic visibility proven.
+3. Custom signature detection validated.
+4. Behavior-based detection created and tuned.
+5. Alert and flow evidence investigated.
+6. Suricata telemetry integrated into Wazuh.
+7. Controlled monitoring-path failure produced.
+8. Blind spot proven using the same test behavior.
+9. Monitoring path restored and detection recovered.
+10. Passive interface and traffic mirror made persistent.
+11. Full Proxmox reboot performed.
+12. Monitoring path restored automatically.
+13. Fresh Suricata detection generated after reboot.
+14. Fresh Wazuh Threat Hunting event confirmed after reboot.
+
+**Technical Build Gate: PASS ✓**
+
+The deeper knowledge review and independent qualification remain intentionally deferred until the wider Cyber Forge range build-out, consistent with Modules 03–05.
 
 ---
 
@@ -679,14 +877,22 @@ Suricata ruleset active                   ✓
 Custom ICMP detection                     ✓
 Behavior-based SYN detection              ✓
 Alert-noise tuning                        ✓
+Alert / flow investigation                ✓
 Suricata → Wazuh integration              ✓
 Threat Hunting visibility                 ✓
+Controlled visibility failure             ✓
+Blind-spot validation                     ✓
+Monitoring-path recovery                  ✓
+Passive NIC persistence                   ✓
+Traffic-mirror persistence                ✓
+Infrastructure VM startup ordering        ✓
+Full host reboot validation               ✓
+Post-reboot Suricata detection            ✓
+Post-reboot Wazuh validation              ✓
 Inline build evidence                     ✓
-Exact alert-window investigation          IN PROGRESS
-Controlled visibility-failure test        PENDING
-Monitoring-path persistence               PENDING
-Post-reboot validation                    PENDING
-Technical Build Gate                      OPEN
+Technical Build Gate                      PASS ✓
+Knowledge review                          DEFERRED
+Independent qualification                 DEFERRED
 ```
 
-Module 06 has reached a meaningful checkpoint: **Cyber Forge now has a working passive network-security-monitoring pipeline with tuned behavioral detection and centralized SIEM visibility.**
+Module 06 is **BUILD COMPLETE ✓**. Cyber Forge now has a persistent passive network-security-monitoring pipeline that survives a host reboot, detects controlled reconnaissance behavior, forwards Suricata telemetry into Wazuh, and restores analyst visibility without manual repair.

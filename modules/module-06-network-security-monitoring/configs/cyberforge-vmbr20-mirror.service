@@ -1,0 +1,14 @@
+[Unit]
+Description=Cyber Forge vmbr20 traffic mirror to NSM-01
+After=network-online.target pve-guests.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/cyberforge-vmbr20-mirror.sh
+ExecStop=-/usr/sbin/tc qdisc del dev tap104i0 clsact
+RemainAfterExit=yes
+TimeoutStartSec=150
+
+[Install]
+WantedBy=multi-user.target
