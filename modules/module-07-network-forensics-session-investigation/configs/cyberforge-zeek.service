@@ -1,0 +1,17 @@
+[Unit]
+Description=Cyber Forge Zeek NSM Sensor
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/opt/zeek/bin/zeekctl
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/zeek/bin/zeekctl deploy
+ExecReload=/opt/zeek/bin/zeekctl deploy
+ExecStop=/opt/zeek/bin/zeekctl stop
+TimeoutStartSec=180
+TimeoutStopSec=90
+
+[Install]
+WantedBy=multi-user.target
