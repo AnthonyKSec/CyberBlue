@@ -127,6 +127,17 @@ Current CyberBlue work demonstrates practical experience with:
 - systemd-managed Proxmox traffic mirroring
 - Infrastructure VM startup sequencing
 - Post-reboot NSM/SIEM qualification
+- NSM VM lifecycle visibility-gap troubleshooting
+- ZeekControl and systemd-managed sensor deployment
+- Live Zeek monitoring on a passive mirrored interface
+- Controlled forensic evidence-gap testing
+- SHA-256 integrity validation of recovered network artifacts
+- HTTP transaction reconstruction and object recovery
+- Multi-source PCAP → Zeek → Suricata → Wazuh correlation
+- SSH protocol fingerprinting and crypto negotiation analysis
+- Zeek connection and protocol metadata analysis
+- TShark TCP/session reconstruction
+- PCAP preservation and packet-level forensic analysis
 
 As additional modules are completed, this repository will expand into endpoint telemetry, SIEM, network monitoring, vulnerability management, detection engineering, incident response, threat hunting, SOAR, cloud security operations, and purple-team validation.
 
@@ -141,6 +152,7 @@ As additional modules are completed, this repository will expand into endpoint t
 | [Module 04 — Endpoint Telemetry & Logging](modules/module-04-endpoint-telemetry-logging/README.md) | Native and enhanced endpoint telemetry, Sysmon, auditd, visibility-gap testing, and telemetry recovery | **BUILD COMPLETE ✓** |
 | [Module 05 — Centralized Logging & SIEM Foundations](modules/module-05-centralized-logging-siem/README.md) | Wazuh SIEM deployment, agent enrollment, Sysmon/Linux telemetry correlation, least-privilege transport, and ingestion failure/recovery validation | **BUILD COMPLETE ✓** |
 | [Module 06 — Network Security Monitoring](modules/module-06-network-security-monitoring/README.md) | Passive Suricata monitoring, traffic mirroring, custom detection, rule tuning, Wazuh SIEM integration, and persistence validation | **BUILD COMPLETE ✓** |
+| [Module 07 — Network Forensics & Session Investigation](modules/module-07-network-forensics-session-investigation/README.md) | PCAP preservation, TShark/Zeek session reconstruction, multi-source correlation, HTTP object recovery, evidence-gap testing, and live Zeek deployment | **IN PROGRESS** |
 
 Modules 03, 04, 05, and 06 have completed their technical build gates. Deeper knowledge review and independent qualification remain tracked separately and will be revisited after the wider Cyber Forge range is built.
 
@@ -310,6 +322,61 @@ Threat Hunting Dashboard
 
 ---
 
+## Module 07 — Network Forensics & Session Investigation
+
+Module 07 is **IN PROGRESS** and extends the qualified Module 06 NSM pipeline into packet/session reconstruction and network-forensic analysis.
+
+Progress captured so far includes:
+
+```text
+[✓] Passive forensic observation point revalidated on NSM-01
+[✓] First controlled TCP session preserved as PCAP
+[✓] 5-tuple, handshake timing, flags, and payload reconstructed with TShark
+[✓] SSH service positively identified from stream payload
+[✓] Zeek 8.0.10 installed and used for offline PCAP analysis
+[✓] Checksum-offload artifact diagnosed and corrected with Zeek -C
+[✓] Full SSH protocol metadata generated with Zeek
+[✓] 50-port reconnaissance reconstructed from 107 captured packets
+[✓] PCAP / Zeek / Suricata correlation validated
+[✓] Matching Wazuh Threat Hunting event correlated
+[✓] HTTP request/response reconstructed
+[✓] HTTP object recovered directly from PCAP
+[✓] Recovered object SHA-256 matched the source object
+[✓] Controlled missing-payload evidence gap created and analyzed
+[✓] Complete evidence restored and object recovery revalidated
+[✓] Live Zeek monitoring validated on ens19
+[✓] ZeekControl-managed standalone sensor deployed
+[✓] Managed JSON conn.log / ssh.log telemetry validated
+[✓] Zeek systemd startup persistence implemented
+[✓] Post-reboot stale Proxmox mirror binding diagnosed
+[✓] Manual mirror rebind restored complete Zeek visibility
+[✓] VM105 Proxmox lifecycle hook created and attached
+[ ] Final automatic VM restart / mirror rebind qualification pending
+[ ] Module 07 Technical Build Gate pending
+```
+
+The investigation workflow now demonstrated is:
+
+```text
+PCAP
+  ↓
+TShark packet/session reconstruction
+  ↓
+Zeek structured metadata
+  ↓
+Suricata detection
+  ↓
+Wazuh SIEM correlation
+  ↓
+Recovered artifact / integrity evidence
+  ↓
+Analyst finding
+```
+
+**[View Module 07 documentation →](modules/module-07-network-forensics-session-investigation/README.md)**
+
+---
+
 ## Current Lab Status
 
 ```text
@@ -362,9 +429,20 @@ Threat Hunting Dashboard
 [✓] Module 06 monitoring-path persistence
 [✓] Module 06 post-reboot Suricata/Wazuh validation
 [✓] Module 06 technical Build Gate completed
+[✓] Module 07 passive forensic observation point validated
+[✓] Module 07 PCAP/session reconstruction validated
+[✓] Zeek offline and live session analysis validated
+[✓] PCAP → Zeek → Suricata → Wazuh correlation validated
+[✓] HTTP object recovery and SHA-256 integrity validation completed
+[✓] Controlled forensic evidence-gap and recovery validated
+[✓] Zeek managed JSON telemetry and systemd persistence implemented
+[✓] NSM VM-restart stale mirror binding diagnosed and recovered
+[✓] VM105 lifecycle hook configured
+[ ] Module 07 automatic VM-lifecycle mirror rebind qualification pending
+[ ] Module 07 technical Build Gate pending
 ```
 
-The current range has completed the **Module 06 technical Build Gate**. Cyber Forge now has centralized endpoint telemetry plus a persistent passive Suricata → Wazuh pipeline that restores automatically after a host reboot and returns fresh network detections to Threat Hunting without manual repair.
+The current range has completed the **Module 06 technical Build Gate** and is actively building **Module 07 — Network Forensics & Session Investigation**. Cyber Forge can now preserve PCAP evidence, reconstruct TCP/SSH/HTTP sessions, enrich traffic with Zeek metadata, correlate IDS/SIEM evidence, recover transferred objects, validate artifact integrity, and demonstrate how missing packets change what an analyst can prove. Final VM-lifecycle mirror-rebind qualification remains open before the Module 07 technical Build Gate closes.
 
 ---
 
