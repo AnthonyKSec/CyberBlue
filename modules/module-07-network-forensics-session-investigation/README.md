@@ -2,6 +2,34 @@
 
 ## Network Forensics & Session Investigation
 
+![Module 07 Banner](./assets/module-07-banner.png)
+
+# Module 07 – Network Forensics Session Investigation
+
+> **Focus:** Capture | Reconstruction | Correlation | Validation
+
+---
+
+## Objective
+In this module, I captured and analyzed network traffic to validate session behavior across multiple layers of the stack. I used Zeek for protocol-aware metadata, tshark for packet/stream reconstruction, Suricata for detection, and Wazuh for centralized visibility and correlation.
+
+## Tools Used
+- Proxmox
+- tcpdump
+- tshark / Wireshark
+- Zeek
+- Suricata
+- Wazuh
+
+## Outcome
+This module validated the ability to:
+- capture live traffic
+- reconstruct TCP, SSH, and HTTP sessions
+- correlate Zeek, Suricata, and Wazuh observations
+- recover transmitted evidence objects
+- verify recovered content integrity
+- validate persistence and restart behavior of the monitoring stack
+
 **Status:** IN PROGRESS  
 **Current checkpoint:** Packet/session reconstruction, Zeek protocol analysis, multi-source reconnaissance correlation, HTTP object recovery, evidence-gap testing, live Zeek deployment, and Zeek persistence are validated. VM-lifecycle mirror rebinding is configured but final automatic restart qualification is still pending.  
 **Platform:** Proxmox VE 9.2.2  
