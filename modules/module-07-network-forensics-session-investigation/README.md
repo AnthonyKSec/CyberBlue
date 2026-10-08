@@ -1,16 +1,14 @@
 # CyberBlue — Module 07
 
-## Network Forensics & Session Investigation
-
 ![Module 07 Banner](./assets/module-07-banner.png)
 
-# Module 07 – Network Forensics Session Investigation
+## Network Forensics & Session Investigation
 
 > **Focus:** Capture | Reconstruction | Correlation | Validation
 
 ---
 
-## Objective
+## Module Objective
 In this module, I captured and analyzed network traffic to validate session behavior across multiple layers of the stack. I used Zeek for protocol-aware metadata, tshark for packet/stream reconstruction, Suricata for detection, and Wazuh for centralized visibility and correlation.
 
 ## Tools Used
