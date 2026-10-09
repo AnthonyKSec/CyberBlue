@@ -1,6 +1,6 @@
 # Module 07 Evidence Manifest
 
-CyberBlue Module 07 — **Network Forensics & Session Investigation** is currently **IN PROGRESS**.
+CyberBlue Module 07 — **Network Forensics & Session Investigation** has completed its **Technical Build Gate — BUILD COMPLETE ✓**.
 
 ## Evidence captured
 
@@ -33,6 +33,20 @@ CyberBlue Module 07 — **Network Forensics & Session Investigation** is current
 27. `15c1-module07-vm-hook-not-triggered.webp` — stale `device *` and no lifecycle-hook journal entry.
 28. `15c2-module07-vm-lifecycle-hook-configured.webp` — Proxmox snippet storage, hookscript attachment, and current mirror state.
 
+## Final qualification evidence
+
+The final VM-lifecycle qualification was completed after the screenshot set above:
+
+- VM 105 stopped and started cleanly.
+- Proxmox logged both post-stop and post-start lifecycle-hook execution.
+- The original synchronous hook exposed a VM-start/systemd dependency deadlock and was corrected with non-blocking systemd calls.
+- The mirror service completed successfully after the corrected start.
+- Both ingress and egress mirroring rebound automatically to tap105i1.
+- A fresh SSH test produced 26 captured packets with 0 drops.
+- Zeek recorded service ssh, conn_state SF, 15 originator packets, 11 responder packets, and missed_bytes 0.
+- ssh.log identified the OpenSSH client/server versions and negotiated crypto.
+- No manual mirror restart was required.
+
 ## Current evidence story
 
-The module has progressed from packet preservation to session reconstruction, protocol metadata, IDS/SIEM correlation, object recovery, integrity validation, and controlled evidence degradation. Live Zeek monitoring is operational and systemd-managed. Testing an NSM-01-only reboot exposed a separate virtual-tap lifecycle failure that was not covered by the full-host reboot validation in Module 06. A Proxmox VM hook is now configured to rebuild the mirror after VM 105 starts, but its final automatic restart qualification remains pending.
+The module has progressed from packet preservation to session reconstruction, protocol metadata, IDS/SIEM correlation, object recovery, integrity validation, and controlled evidence degradation. Live Zeek monitoring is operational and systemd-managed. Testing an NSM-01-only reboot exposed a separate virtual-tap lifecycle failure that was not covered by the full-host reboot validation in Module 06. A Proxmox VM hook now rebuilds the mirror after VM 105 starts. The first synchronous implementation exposed a lifecycle dependency deadlock; converting the service calls to non-blocking execution resolved it. Final restart testing restored the mirror automatically and produced a complete Zeek SSH session with zero missed bytes.
