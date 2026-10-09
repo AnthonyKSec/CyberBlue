@@ -128,6 +128,9 @@ Current CyberBlue work demonstrates practical experience with:
 - Infrastructure VM startup sequencing
 - Post-reboot NSM/SIEM qualification
 - NSM VM lifecycle visibility-gap troubleshooting
+- Proxmox lifecycle hooks for monitoring-path recovery
+- systemd/Proxmox startup-dependency deadlock diagnosis
+- Non-blocking lifecycle automation
 - ZeekControl and systemd-managed sensor deployment
 - Live Zeek monitoring on a passive mirrored interface
 - Controlled forensic evidence-gap testing
