@@ -476,6 +476,10 @@ Zeek can be `running` while receiving no useful traffic. After an NSM-01 reboot,
 
 Module 06 validated persistence across a full PVE reboot. Module 07 exposed a separate failure case: rebooting the sensor VM alone recreated its tap device and invalidated the previous mirred target.
 
+## Lifecycle automation must not create circular startup dependencies
+
+The first lifecycle hook correctly detected VM start/stop events, but its synchronous systemd call combined with the mirror service's Proxmox guest-start ordering created a dependency deadlock. The VM process was running while the `qmstart` worker remained blocked and held VM 105's lock. Converting the hook to non-blocking systemd calls preserved boot ordering while allowing the VM lifecycle transaction to complete normally.
+
 ## Capture completeness changes what an analyst can prove
 
 Removing one application-payload packet preserved connection and HTTP metadata while eliminating the evidence needed to recover and hash the actual object.
@@ -508,8 +512,11 @@ See [EVIDENCE.md](EVIDENCE.md) and [screenshots/README.md](screenshots/README.md
 - ZeekControl standalone deployment;
 - JSON telemetry configuration;
 - systemd persistence for Zeek;
-- virtual tap lifecycle troubleshooting; and
-- Proxmox hookscript preparation for mirror rebinding.
+- virtual tap lifecycle troubleshooting;
+- Proxmox lifecycle hooks for mirror rebinding;
+- Proxmox/systemd startup-dependency deadlock diagnosis;
+- non-blocking lifecycle automation; and
+- post-restart end-to-end packet and Zeek validation.
 
 ---
 
