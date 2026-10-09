@@ -152,9 +152,9 @@ As additional modules are completed, this repository will expand into endpoint t
 | [Module 04 — Endpoint Telemetry & Logging](modules/module-04-endpoint-telemetry-logging/README.md) | Native and enhanced endpoint telemetry, Sysmon, auditd, visibility-gap testing, and telemetry recovery | **BUILD COMPLETE ✓** |
 | [Module 05 — Centralized Logging & SIEM Foundations](modules/module-05-centralized-logging-siem/README.md) | Wazuh SIEM deployment, agent enrollment, Sysmon/Linux telemetry correlation, least-privilege transport, and ingestion failure/recovery validation | **BUILD COMPLETE ✓** |
 | [Module 06 — Network Security Monitoring](modules/module-06-network-security-monitoring/README.md) | Passive Suricata monitoring, traffic mirroring, custom detection, rule tuning, Wazuh SIEM integration, and persistence validation | **BUILD COMPLETE ✓** |
-| [Module 07 — Network Forensics & Session Investigation](modules/module-07-network-forensics-session-investigation/README.md) | PCAP preservation, TShark/Zeek session reconstruction, multi-source correlation, HTTP object recovery, evidence-gap testing, and live Zeek deployment | **IN PROGRESS** |
+| [Module 07 — Network Forensics & Session Investigation](modules/module-07-network-forensics-session-investigation/README.md) | PCAP preservation, TShark/Zeek session reconstruction, multi-source correlation, HTTP object recovery, evidence-gap testing, live Zeek deployment, and lifecycle persistence | **BUILD COMPLETE ✓** |
 
-Modules 03, 04, 05, and 06 have completed their technical build gates. Deeper knowledge review and independent qualification remain tracked separately and will be revisited after the wider Cyber Forge range is built.
+Modules 03, 04, 05, 06, and 07 have completed their technical build gates. Deeper knowledge review and independent qualification remain tracked separately and will be revisited after the wider Cyber Forge range is built.
 
 ---
 
@@ -324,7 +324,7 @@ Threat Hunting Dashboard
 
 ## Module 07 — Network Forensics & Session Investigation
 
-Module 07 is **IN PROGRESS** and extends the qualified Module 06 NSM pipeline into packet/session reconstruction and network-forensic analysis.
+Module 07 has completed its **technical Build Gate** and extends the qualified Module 06 NSM pipeline into packet/session reconstruction and network-forensic analysis.
 
 Progress captured so far includes:
 
@@ -351,8 +351,11 @@ Progress captured so far includes:
 [✓] Post-reboot stale Proxmox mirror binding diagnosed
 [✓] Manual mirror rebind restored complete Zeek visibility
 [✓] VM105 Proxmox lifecycle hook created and attached
-[ ] Final automatic VM restart / mirror rebind qualification pending
-[ ] Module 07 Technical Build Gate pending
+[✓] Synchronous lifecycle-hook deadlock diagnosed
+[✓] Hook hardened with non-blocking systemd calls
+[✓] Automatic VM restart / mirror rebind qualification passed
+[✓] Fresh post-restart Zeek SSH session validated
+[✓] Module 07 Technical Build Gate passed
 ```
 
 The investigation workflow now demonstrated is:
@@ -438,11 +441,12 @@ Analyst finding
 [✓] Zeek managed JSON telemetry and systemd persistence implemented
 [✓] NSM VM-restart stale mirror binding diagnosed and recovered
 [✓] VM105 lifecycle hook configured
-[ ] Module 07 automatic VM-lifecycle mirror rebind qualification pending
-[ ] Module 07 technical Build Gate pending
+[✓] Module 07 automatic VM-lifecycle mirror rebind qualification passed
+[✓] Post-restart packet visibility and Zeek SSH telemetry validated
+[✓] Module 07 technical Build Gate completed
 ```
 
-The current range has completed the **Module 06 technical Build Gate** and is actively building **Module 07 — Network Forensics & Session Investigation**. Cyber Forge can now preserve PCAP evidence, reconstruct TCP/SSH/HTTP sessions, enrich traffic with Zeek metadata, correlate IDS/SIEM evidence, recover transferred objects, validate artifact integrity, and demonstrate how missing packets change what an analyst can prove. Final VM-lifecycle mirror-rebind qualification remains open before the Module 07 technical Build Gate closes.
+The current range has completed the **Module 07 technical Build Gate**. Cyber Forge can preserve PCAP evidence, reconstruct TCP/SSH/HTTP sessions, enrich traffic with Zeek metadata, correlate IDS/SIEM evidence, recover transferred objects, validate artifact integrity, demonstrate how missing packets change what an analyst can prove, and automatically restore passive Zeek visibility after an independent NSM-01 VM lifecycle event.
 
 ---
 
