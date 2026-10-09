@@ -28,8 +28,8 @@ This module validated the ability to:
 - verify recovered content integrity
 - validate persistence and restart behavior of the monitoring stack
 
-**Status:** IN PROGRESS  
-**Current checkpoint:** Packet/session reconstruction, Zeek protocol analysis, multi-source reconnaissance correlation, HTTP object recovery, evidence-gap testing, live Zeek deployment, and Zeek persistence are validated. VM-lifecycle mirror rebinding is configured but final automatic restart qualification is still pending.  
+**Status:** BUILD COMPLETE ✓  
+**Current checkpoint:** Technical Build Gate passed — packet/session reconstruction, Zeek protocol analysis, multi-source correlation, object recovery/integrity, evidence-gap testing, managed live Zeek, and VM-lifecycle mirror persistence are validated.  
 **Platform:** Proxmox VE 9.2.2  
 **Sensor:** VM105 — NSM-01  
 **Primary tools:** tcpdump, TShark/Wireshark CLI, Zeek 8.0.10, Suricata 7.0.3, Wazuh 4.14.8  
@@ -444,7 +444,21 @@ Proxmox `local` storage was then enabled for `snippets`, `cyberforge-nsm-hook.sh
 
 ![VM lifecycle hook configured](screenshots/15c2-module07-vm-lifecycle-hook-configured.webp)
 
-**Current checkpoint:** the hook is configured, but the final independent VM 105 restart qualification still needs to be performed without manually restarting the mirror service.
+The first lifecycle implementation then exposed a second failure mode: the hook called a synchronous systemd restart while the mirror unit was ordered after Proxmox guest startup. Because the VM-start task waits for the hook to return, the start task held VM 105's lock while the mirror job waited behind guest-start completion.
+
+The hook was hardened with non-blocking service calls so the VM lifecycle could complete without waiting on the mirror rebuild.
+
+The corrected qualification passed:
+- VM 105 stopped and started cleanly.
+- Both post-stop and post-start hook phases executed.
+- The mirror service completed successfully.
+- Ingress and egress mirroring rebound automatically to tap105i1.
+- A fresh SSH test produced 26 captured packets with zero drops.
+- Zeek recorded service ssh, connection state SF, 15 originator packets, 11 responder packets, and 0 missed bytes.
+- ssh.log identified the OpenSSH client/server versions and negotiated crypto.
+- No manual mirror restart was required.
+
+**Result:** PASS — independent VM 105 lifecycle events now rebuild the passive mirror automatically and restore full Zeek session visibility.
 
 ---
 
@@ -524,10 +538,12 @@ Zeek systemd startup                                ✓
 VM-restart visibility failure identified            ✓
 Mirror rebind recovery                              ✓
 VM lifecycle hook configured                        ✓
-Automatic hook execution after VM105 restart        PENDING
-Automatic mirror rebind after VM105 restart         PENDING
-Fresh post-hook Zeek SSH session                     PENDING
-Final Module 07 Technical Build Gate                OPEN
+Automatic hook execution after VM105 restart        ✓
+Automatic mirror rebind after VM105 restart         ✓
+Fresh post-hook Zeek SSH session                     ✓
+Final Module 07 Technical Build Gate                PASSED ✓
 ```
 
-Module 07 remains **IN PROGRESS**. The next session should begin with the final VM-lifecycle hook qualification, followed by any remaining architecture/documentation cleanup before the Technical Build Gate is closed.
+Module 07 has completed its **Technical Build Gate**. The final qualification proved that an independent NSM-01 VM lifecycle event can recreate the monitoring tap, trigger the Proxmox hook, rebuild the mirror without blocking VM startup, and restore full bidirectional SSH visibility to Zeek without manual intervention.
+
+Knowledge review and independent qualification remain tracked separately and will be revisited after the wider Cyber Forge range is built.
