@@ -30,3 +30,8 @@
 | `15b3-module07-post-recovery-zeek-validation.webp` | Full bidirectional SSH visibility restored |
 | `15c1-module07-vm-hook-not-triggered.webp` | No hook existed/fired during first lifecycle test |
 | `15c2-module07-vm-lifecycle-hook-configured.webp` | Hookscript prepared and attached to VM 105 |
+
+
+## Final lifecycle qualification
+
+The final VM 105 lifecycle qualification was completed after the 28-image screenshot set above. The qualifying terminal evidence is documented in the module README and EVIDENCE manifest: the corrected non-blocking hook executed, the mirror rebound automatically to `tap105i1`, a fresh SSH session produced 26 captured packets with zero drops, and Zeek recorded a complete `SF` SSH session with zero missed bytes. A separate final screenshot has not been added to this index.
