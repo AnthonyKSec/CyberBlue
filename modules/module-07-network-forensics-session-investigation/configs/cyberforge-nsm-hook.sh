@@ -10,13 +10,13 @@ case "$PHASE" in
     post-start)
         logger -t cyberforge-nsm-hook \
           "NSM-01 started; rebuilding vmbr20 mirror"
-        systemctl restart cyberforge-vmbr20-mirror.service
+        systemctl --no-block restart cyberforge-vmbr20-mirror.service
         ;;
 
     post-stop)
         logger -t cyberforge-nsm-hook \
           "NSM-01 stopped; removing vmbr20 mirror"
-        systemctl stop cyberforge-vmbr20-mirror.service || true
+        systemctl --no-block stop cyberforge-vmbr20-mirror.service || true
         ;;
 esac
 
