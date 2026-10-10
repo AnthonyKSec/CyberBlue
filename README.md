@@ -156,6 +156,7 @@ As additional modules are completed, this repository will expand into endpoint t
 | [Module 05 — Centralized Logging & SIEM Foundations](modules/module-05-centralized-logging-siem/README.md) | Wazuh SIEM deployment, agent enrollment, Sysmon/Linux telemetry correlation, least-privilege transport, and ingestion failure/recovery validation | **BUILD COMPLETE ✓** |
 | [Module 06 — Network Security Monitoring](modules/module-06-network-security-monitoring/README.md) | Passive Suricata monitoring, traffic mirroring, custom detection, rule tuning, Wazuh SIEM integration, and persistence validation | **BUILD COMPLETE ✓** |
 | [Module 07 — Network Forensics & Session Investigation](modules/module-07-network-forensics-session-investigation/README.md) | PCAP preservation, TShark/Zeek session reconstruction, multi-source correlation, HTTP object recovery, evidence-gap testing, live Zeek deployment, and lifecycle persistence | **BUILD COMPLETE ✓** |
+| [Module 08 — Vulnerability Management](modules/module-08-vulnerability-management/README.md) | Dedicated Greenbone/OpenVAS scanner, dual-network assessment path, feed validation, finding analysis, remediation, and rescan closure | **IN PROGRESS** |
 
 Modules 03, 04, 05, 06, and 07 have completed their technical build gates. Deeper knowledge review and independent qualification remain tracked separately and will be revisited after the wider Cyber Forge range is built.
 
@@ -447,9 +448,16 @@ Analyst finding
 [✓] Module 07 automatic VM-lifecycle mirror rebind qualification passed
 [✓] Post-restart packet visibility and Zeek SSH telemetry validated
 [✓] Module 07 technical Build Gate completed
+[✓] VULN-01 dedicated vulnerability scanner provisioned
+[✓] VULN-01 dual-network management/scan path validated
+[✓] Greenbone Community Edition stack deployed
+[✓] Greenbone admin credential hardened
+[ ] Module 08 feed synchronization complete
+[ ] Module 08 baseline vulnerability scan
+[ ] Module 08 technical Build Gate
 ```
 
-The current range has completed the **Module 07 technical Build Gate**. Cyber Forge can preserve PCAP evidence, reconstruct TCP/SSH/HTTP sessions, enrich traffic with Zeek metadata, correlate IDS/SIEM evidence, recover transferred objects, validate artifact integrity, demonstrate how missing packets change what an analyst can prove, and automatically restore passive Zeek visibility after an independent NSM-01 VM lifecycle event.
+The current range has completed the **Module 07 technical Build Gate** and is actively building **Module 08 — Vulnerability Management**. VULN-01 is provisioned as a dedicated dual-homed Greenbone/OpenVAS scanner with separate management and assessment paths. Docker and the Greenbone stack are operational, the admin credential has been hardened, and initial feed synchronization is still in progress before baseline scanning begins.
 
 ---
 
