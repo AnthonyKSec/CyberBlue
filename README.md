@@ -142,6 +142,15 @@ Current CyberBlue work demonstrates practical experience with:
 - TShark TCP/session reconstruction
 - PCAP preservation and packet-level forensic analysis
 
+- Greenbone/OpenVAS vulnerability scanning and feed readiness
+- Independent SSH vulnerability validation, hardening, and same-target rescan
+- SSH key-based authenticated assessment and Linux package inventory
+- Severity versus residual risk decision-making (MDS, SSB, SMT)
+- Dockerized scanner capacity and LVM recovery
+- Scoped nftables WAN egress / NAT and DNS troubleshooting
+- Proxmox lifecycle hooks and automated traffic-mirror watchdog recovery
+- End-to-end network monitoring packet replay and blind-spot validation
+
 As additional modules are completed, this repository will expand into endpoint telemetry, SIEM, network monitoring, vulnerability management, detection engineering, incident response, threat hunting, SOAR, cloud security operations, and purple-team validation.
 
 ---
@@ -156,9 +165,9 @@ As additional modules are completed, this repository will expand into endpoint t
 | [Module 05 — Centralized Logging & SIEM Foundations](modules/module-05-centralized-logging-siem/README.md) | Wazuh SIEM deployment, agent enrollment, Sysmon/Linux telemetry correlation, least-privilege transport, and ingestion failure/recovery validation | **BUILD COMPLETE ✓** |
 | [Module 06 — Network Security Monitoring](modules/module-06-network-security-monitoring/README.md) | Passive Suricata monitoring, traffic mirroring, custom detection, rule tuning, Wazuh SIEM integration, and persistence validation | **BUILD COMPLETE ✓** |
 | [Module 07 — Network Forensics & Session Investigation](modules/module-07-network-forensics-session-investigation/README.md) | PCAP preservation, TShark/Zeek session reconstruction, multi-source correlation, HTTP object recovery, evidence-gap testing, live Zeek deployment, and lifecycle persistence | **BUILD COMPLETE ✓** |
-| [Module 08 — Vulnerability Management](modules/module-08-vulnerability-management/README.md) | Dedicated Greenbone/OpenVAS scanner, dual-network assessment path, feed validation, finding analysis, remediation, and rescan closure | **IN PROGRESS** |
+| [Module 08 — Vulnerability Management](modules/module-08-vulnerability-management/README.md) | Greenbone baseline, validated SSH remediation and rescan, authenticated Linux inventory, open kernel risk analysis, storage recovery, and mirror self-healing | **BUILD COMPLETE ✓** |
 
-Modules 03, 04, 05, 06, and 07 have completed their technical build gates. Deeper knowledge review and independent qualification remain tracked separately and will be revisited after the wider Cyber Forge range is built.
+Modules 03–08 have completed their technical build gates. Deeper knowledge review and independent qualification remain tracked separately and will be revisited after the wider Cyber Forge range is built.
 
 ---
 
@@ -384,6 +393,33 @@ Analyst finding
 
 ---
 
+## Module 08 — Vulnerability Management
+
+Module 08 has completed its **technical Build Gate** using Greenbone Community Edition on dedicated dual-homed VULN-01 (VM106).
+
+```text
+[✓] VULN-01 provisioned and dual-network scan path validated
+[✓] Greenbone stack deployed, admin credential hardened, four feeds current
+[✓] ROUTER-01 baseline and independent SSH MAC weakness validation
+[✓] SSH MAC remediated and closure proven by same-target rescan
+[✓] Linux-Mint SSH-enabled unauthenticated and key-authenticated scans
+[✓] Greenbone SSH authentication and Bash 5.2.21 local inspection proven
+[✓] MDS and SSB kernel findings analyzed across guest and hypervisor — risks open
+[✓] ROUTER-01 WAN/NAT/DNS repaired; Linux-Mint connectivity persisted
+[✓] VULN-01 root storage expanded to 100 GiB, Greenbone data preserved
+[✓] ROUTER-01 and Linux-Mint post-reboot connectivity validated
+[✓] NSM mirror blind spot demonstrated and manually recovered
+[✓] VM104/VM105 hooks, systemd mirror watchdog and automatic repair tested
+[✓] 8-packet end-to-end monitoring recovery validated with zero drops
+[✓] Module 08 Technical Build Gate passed
+[ ] Separate in-guest reboot auto-recovery regression (operational follow-up)
+[ ] Knowledge review and independent qualification — deferred
+```
+
+**[View Module 08 documentation →](modules/module-08-vulnerability-management/README.md)**
+
+---
+
 ## Current Lab Status
 
 ```text
@@ -452,12 +488,15 @@ Analyst finding
 [✓] VULN-01 dual-network management/scan path validated
 [✓] Greenbone Community Edition stack deployed
 [✓] Greenbone admin credential hardened
-[ ] Module 08 feed synchronization complete
-[ ] Module 08 baseline vulnerability scan
-[ ] Module 08 technical Build Gate
+[✓] Module 08 Greenbone feeds fully synchronized
+[✓] ROUTER-01 vulnerability remediation and rescan validated
+[✓] Linux-Mint credentialed host inspection validated
+[✓] VULN-01 storage and scanner recovery validated
+[✓] Post-reboot segmented egress and automatic mirror recovery validated
+[✓] Module 08 technical Build Gate completed
 ```
 
-The current range has completed the **Module 07 technical Build Gate** and is actively building **Module 08 — Vulnerability Management**. VULN-01 is provisioned as a dedicated dual-homed Greenbone/OpenVAS scanner with separate management and assessment paths. Docker and the Greenbone stack are operational, the admin credential has been hardened, and initial feed synchronization is still in progress before baseline scanning begins.
+The current range has completed the **Module 08 technical Build Gate**. The Greenbone platform is operational on VULN-01, baseline and authenticated checks are evidenced, SSH remediation is closed by rescan, and remaining kernel findings are documented as open risk. Router/endpoint reboot persistence and a controlled monitoring-mirror self-repair were validated. A separate in-guest reboot watchdog regression remains an operational follow-up.
 
 ---
 
