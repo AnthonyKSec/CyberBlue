@@ -151,6 +151,9 @@ Current CyberBlue work demonstrates practical experience with:
 - Proxmox lifecycle hooks and automated traffic-mirror watchdog recovery
 - End-to-end network monitoring packet replay and blind-spot validation
 
+- Velociraptor DFIR server installation, frontend/GUI segmentation, evidence storage permission hardening, and Linux client package validation
+- Linux filesystem mount dependencies, fail-safe service startup gates, incident-evidence preparation, and recovery documentation
+
 As additional modules are completed, this repository will expand into endpoint telemetry, SIEM, network monitoring, vulnerability management, detection engineering, incident response, threat hunting, SOAR, cloud security operations, and purple-team validation.
 
 ---
@@ -166,6 +169,7 @@ As additional modules are completed, this repository will expand into endpoint t
 | [Module 06 — Network Security Monitoring](modules/module-06-network-security-monitoring/README.md) | Passive Suricata monitoring, traffic mirroring, custom detection, rule tuning, Wazuh SIEM integration, and persistence validation | **BUILD COMPLETE ✓** |
 | [Module 07 — Network Forensics & Session Investigation](modules/module-07-network-forensics-session-investigation/README.md) | PCAP preservation, TShark/Zeek session reconstruction, multi-source correlation, HTTP object recovery, evidence-gap testing, live Zeek deployment, and lifecycle persistence | **BUILD COMPLETE ✓** |
 | [Module 08 — Vulnerability Management](modules/module-08-vulnerability-management/README.md) | Greenbone baseline, validated SSH remediation and rescan, authenticated Linux inventory, open kernel risk analysis, storage recovery, and mirror self-healing | **BUILD COMPLETE ✓** |
+| [Module 09 — Endpoint Forensics & Threat Hunting](modules/module-09-endpoint-forensics-threat-hunting/README.md) | DFIR-01 / Velociraptor, segmented frontend, protected evidence storage, GUI and client package readiness | **IN PROGRESS** |
 
 Modules 03–08 have completed their technical build gates. Deeper knowledge review and independent qualification remain tracked separately and will be revisited after the wider Cyber Forge range is built.
 
@@ -420,6 +424,29 @@ Module 08 has completed its **technical Build Gate** using Greenbone Community E
 
 ---
 
+## Module 09 — Endpoint Forensics & Threat Hunting
+
+**IN PROGRESS — Phase 2, server deployed and Linux client package staged.** DFIR-01 (VM107) runs Velociraptor 0.77.3 with a segregated 150 GiB forensic disk on Cyber Forge's shared HDD, management GUI accessible only through an SSH tunnel, and a lab-only endpoint frontend (`10.10.20.13:8000`).
+
+```text
+[✓] Dedicated DFIR-01 VM/Ubuntu/QEMU agent validated
+[✓] Shared 1 TB HDD registered with mountpoint protection
+[✓] 150 GiB evidence disk, mount, restricted directories verified
+[✓] Segregated management and investigation NICs validated
+[✓] Velociraptor binary SHA-256 checked and service deployed
+[✓] Frontend 10.10.20.13:8000 and GUI 127.0.0.1:8889 validated
+[✓] Client package inspected, checksum verified on VM101
+[✓] All VMs gracefully stopped at session end
+[ ] Install and enroll Linux-Mint agent
+[ ] Collect baseline forensic artifacts
+[ ] Deploy controlled vulnerable VM108 and execute CTH-001
+[ ] Complete forensic investigation, timeline, report and qualification
+```
+
+**[View Module 09 documentation →](modules/module-09-endpoint-forensics-threat-hunting/README.md)**
+
+---
+
 ## Current Lab Status
 
 ```text
@@ -494,6 +521,11 @@ Module 08 has completed its **technical Build Gate** using Greenbone Community E
 [✓] VULN-01 storage and scanner recovery validated
 [✓] Post-reboot segmented egress and automatic mirror recovery validated
 [✓] Module 08 technical Build Gate completed
+[✓] Cyber Forge 1 TB shared HDD configured and mounted
+[✓] DFIR-01 + Velociraptor server deployed and GUI verified
+[✓] Linux-Mint client package verified and staged (not installed)
+[ ] Module 09 agent enrollment and endpoint baseline
+[ ] Module 09 technical Build Gate
 ```
 
 The current range has completed the **Module 08 technical Build Gate**. The Greenbone platform is operational on VULN-01, baseline and authenticated checks are evidenced, SSH remediation is closed by rescan, and remaining kernel findings are documented as open risk. Router/endpoint reboot persistence and a controlled monitoring-mirror self-repair were validated. A separate in-guest reboot watchdog regression remains an operational follow-up.

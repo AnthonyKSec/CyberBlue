@@ -1,0 +1,11 @@
+# Additional *lab* NIC only; ens18 management/default route remains in the installer file.
+network:
+  version: 2
+  ethernets:
+    ens19:
+      dhcp4: false
+      dhcp6: false
+      accept-ra: false
+      addresses:
+        - 10.10.20.13/24
+      optional: true
