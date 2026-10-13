@@ -8,7 +8,7 @@
 >
 > **Historical October 11 checkpoint:** Linux-Mint agent `.deb` transferred and SHA-256 matched; all VMs gracefully stopped for the session. Agent **not yet installed or enrolled**.
 >
-> **Qualification:** Technical Build Gate **OPEN**. No endpoint hunt, collection, or investigation has yet been qualified.
+> **Qualification:** Technical Build Gate **OPEN**. Linux-Mint baseline artifact collections are validated; physical Windows enrollment, controlled threat hunt, full investigation and replay are still pending.
 
 
 > **Latest progress:** [October 12 validated Linux baseline and physical Windows relay](PROGRESS-2026-10-12.md) · [Evidence SHA-256 addendum](EVIDENCE-NEW-SHA256.txt). Screenshots and troubleshooting documentation are preserved there; Module 09 is **not** build-complete.
