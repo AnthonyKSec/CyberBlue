@@ -4,7 +4,9 @@
 
 These are original terminal/GUI screenshots captured during the live Cyber Forge build. The conceptual banner in `assets/` is illustrative and **not** forensic proof. Screenshots are linked by exact filename; failures and repairs are deliberately retained.
 
-**Total curated screenshots: 30.** No screenshot is evidence of a client agent enrollment, endpoint artifact collection, or threat-hunting completion.
+> **Newer evidence:** [October 12 extended Linux/Windows checkpoint](PROGRESS-2026-10-12.md) with added screenshots and SHA-256 inventory. The 30 original screenshots below cover the first session only; enrollment and collections were validated in the following session.
+
+**Original checkpoint curated screenshots: 30.** No screenshot is evidence of a client agent enrollment, endpoint artifact collection, or threat-hunting completion.
 
 | Screenshot | What it proves / records |
 |---|---|

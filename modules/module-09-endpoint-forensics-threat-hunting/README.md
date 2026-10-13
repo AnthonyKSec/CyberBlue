@@ -59,6 +59,8 @@ PVE /dev/sdb: 1 TB shared HDD — ext4 Proxmox directory storage
 
 ---
 
+> **Update (October 12, 2026):** Linux-Mint is now successfully enrolled and returning forensic process, network, account, cron, and service records. DFIR-01's restricted physical-Windows TCP relay is running under a managed non-root systemd account. **Windows enrollment, complete relay reboot testing, and the full hunting qualification remain open.** See [the October 12 checkpoint and evidence gallery](PROGRESS-2026-10-12.md). The original Step 09.38 journal and older qualification table below are historical, not the latest state.
+
 ## Session build journal — validated through Step 09.38
 
 ### 01 — Capacity, available storage, and HDD repurposing
