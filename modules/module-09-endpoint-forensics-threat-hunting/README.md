@@ -2,13 +2,16 @@
 
 ![CyberBlue Module 09 — Endpoint Forensics & Threat Hunting](assets/module-09-banner.webp)
 
-> **Status: IN PROGRESS — Phase 2 server deployment and Linux client staging complete**
+> **Status: IN PROGRESS — Linux endpoint enrolled and baseline collected; Windows physical endpoint enrollment pending**
 >
 > **Implementation:** Velociraptor DFIR 0.77.3 on Proxmox VE 9.2.2 / Ubuntu Server 24.04.5 LTS
 >
-> **Latest validated checkpoint:** Linux-Mint agent `.deb` transferred and SHA-256 matched; all VMs gracefully stopped for the session. Agent **not yet installed or enrolled**.
+> **Historical October 11 checkpoint:** Linux-Mint agent `.deb` transferred and SHA-256 matched; all VMs gracefully stopped for the session. Agent **not yet installed or enrolled**.
 >
 > **Qualification:** Technical Build Gate **OPEN**. No endpoint hunt, collection, or investigation has yet been qualified.
+
+
+> **Latest progress:** [October 12 validated Linux baseline and physical Windows relay](PROGRESS-2026-10-12.md) · [Evidence SHA-256 addendum](EVIDENCE-NEW-SHA256.txt). Screenshots and troubleshooting documentation are preserved there; Module 09 is **not** build-complete.
 
 ## Principle before platform
 
@@ -61,7 +64,7 @@ PVE /dev/sdb: 1 TB shared HDD — ext4 Proxmox directory storage
 
 > **Update (October 12, 2026):** Linux-Mint is now successfully enrolled and returning forensic process, network, account, cron, and service records. DFIR-01's restricted physical-Windows TCP relay is running under a managed non-root systemd account. **Windows enrollment, complete relay reboot testing, and the full hunting qualification remain open.** See [the October 12 checkpoint and evidence gallery](PROGRESS-2026-10-12.md). The original Step 09.38 journal and older qualification table below are historical, not the latest state.
 
-## Session build journal — validated through Step 09.38
+## Initial build journal — historical checkpoint through Step 09.38
 
 ### 01 — Capacity, available storage, and HDD repurposing
 
@@ -174,4 +177,4 @@ Do not expose Velociraptor's self-signed GUI/frontend to the public Internet or 
 
 ## Principle / capability recap
 
-This checkpoint demonstrates how to **build and secure a forensic collection platform**, separate management and collection networks, preserve evidence storage boundaries, inspect installers before use, validate client transport material, and recover from real configuration/deployment failures. **It does not yet demonstrate successful endpoint forensic collection or threat hunting.** Those are the next qualification gates.
+The initial October 11 checkpoint documents the secured forensic platform and its deployment recovery. Since then, **Linux-Mint enrollment and successful baseline forensic artifact collections have been demonstrated**, and a restricted relay has been validated for physical Windows onboarding. **Windows enrollment, a controlled threat hunt, end-to-end recovery qualification, and the Module 09 technical build gate remain open.** See the [October 12 field progress and evidence](PROGRESS-2026-10-12.md).
