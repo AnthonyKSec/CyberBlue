@@ -169,7 +169,7 @@ As additional modules are completed, this repository will expand into endpoint t
 | [Module 06 — Network Security Monitoring](modules/module-06-network-security-monitoring/README.md) | Passive Suricata monitoring, traffic mirroring, custom detection, rule tuning, Wazuh SIEM integration, and persistence validation | **BUILD COMPLETE ✓** |
 | [Module 07 — Network Forensics & Session Investigation](modules/module-07-network-forensics-session-investigation/README.md) | PCAP preservation, TShark/Zeek session reconstruction, multi-source correlation, HTTP object recovery, evidence-gap testing, live Zeek deployment, and lifecycle persistence | **BUILD COMPLETE ✓** |
 | [Module 08 — Vulnerability Management](modules/module-08-vulnerability-management/README.md) | Greenbone baseline, validated SSH remediation and rescan, authenticated Linux inventory, open kernel risk analysis, storage recovery, and mirror self-healing | **BUILD COMPLETE ✓** |
-| [Module 09 — Endpoint Forensics & Threat Hunting](modules/module-09-endpoint-forensics-threat-hunting/README.md) | DFIR-01 / Velociraptor, segmented frontend, protected evidence storage, GUI and client package readiness | **IN PROGRESS** |
+| [Module 09 — Endpoint Forensics & Threat Hunting](modules/module-09-endpoint-forensics-threat-hunting/README.md) | Linux-Mint enrolled: process/network/account/persistence baselines; restricted Windows relay deployed; physical enrollment pending | **IN PROGRESS** |
 
 Modules 03–08 have completed their technical build gates. Deeper knowledge review and independent qualification remain tracked separately and will be revisited after the wider Cyber Forge range is built.
 
@@ -426,24 +426,22 @@ Module 08 has completed its **technical Build Gate** using Greenbone Community E
 
 ## Module 09 — Endpoint Forensics & Threat Hunting
 
-**IN PROGRESS — Phase 2, server deployed and Linux client package staged.** DFIR-01 (VM107) runs Velociraptor 0.77.3 with a segregated 150 GiB forensic disk on Cyber Forge's shared HDD, management GUI accessible only through an SSH tunnel, and a lab-only endpoint frontend (`10.10.20.13:8000`).
+**IN PROGRESS — Linux-Mint forensic baseline validated, restricted management-network relay operational; physical Windows enrollment and full investigation still open.**
 
 ```text
-[✓] Dedicated DFIR-01 VM/Ubuntu/QEMU agent validated
-[✓] Shared 1 TB HDD registered with mountpoint protection
-[✓] 150 GiB evidence disk, mount, restricted directories verified
-[✓] Segregated management and investigation NICs validated
-[✓] Velociraptor binary SHA-256 checked and service deployed
-[✓] Frontend 10.10.20.13:8000 and GUI 127.0.0.1:8889 validated
-[✓] Client package inspected, checksum verified on VM101
-[✓] All VMs gracefully stopped at session end
-[ ] Install and enroll Linux-Mint agent
-[ ] Collect baseline forensic artifacts
-[ ] Deploy controlled vulnerable VM108 and execute CTH-001
-[ ] Complete forensic investigation, timeline, report and qualification
+[✓] DFIR-01 restarted with evidence storage and Velociraptor running
+[✓] Linux-Mint agent installed and enrolled
+[✓] Linux processes (148 rows), connections (9 rows), users (50 rows)
+[✓] Cron (40 result rows), services (64 rows), timers (12)
+[✓] Windows laptop discovery and packet-path investigation
+[✓] Limited TCP relay: authorized RHINOTOUGH access, TLS 1.3 certificate identity
+[✓] Dedicated relay firewall and least-privilege systemd relay active/enabled
+[ ] Windows MSI enrollment and first forensic collection
+[ ] Managed relay post-reboot regression
+[ ] Controlled isolated VM108 hunting simulation, investigation and replay
 ```
 
-**[View Module 09 documentation →](modules/module-09-endpoint-forensics-threat-hunting/README.md)**
+[**Module 09 build documentation**](modules/module-09-endpoint-forensics-threat-hunting/README.md) · [**October 12 validated progress**](modules/module-09-endpoint-forensics-threat-hunting/STATUS-2026-10-12.md)
 
 ---
 
