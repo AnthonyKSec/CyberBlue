@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# CyberBlue CyberForge DFIR launcher v2 — used by BOTH application and desktop icons.
+# The GUI remains bound to DFIR-01 loopback and accessed via the SSH host alias.
+set -Eeuo pipefail
+umask 077
+
+URL='https://127.0.0.1:18889'
+PORT=18889
+HELPER="$HOME/.local/libexec/cyberblue-dfir-start-tunnel"
+LOG_DIR="$HOME/.cache/cyberblue-dfir"
+mkdir -p "$LOG_DIR"
+LOG="$LOG_DIR/launcher.log"
+exec >>"$LOG" 2>&1
+printf '\n[%s] CyberBlue DFIR launch requested\n' "$(date -Is)"
+
+show_error() {
+  local message="$1"
+  printf 'ERROR: %s\n' "$message" >&2
+  if command -v zenity >/dev/null 2>&1; then
+    zenity --error --title='CyberBlue Raptor — DFIR Console' \
+      --width=460 --text="$message\n\nDetails: $LOG" || true
+  elif command -v notify-send >/dev/null 2>&1; then
+    notify-send 'CyberBlue DFIR — Launch failed' "$message (see $LOG)" || true
+  fi
+}
+
+for cmd in ssh ss curl xdg-open; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    show_error "Missing required command: $cmd"
+    exit 1
+  fi
+done
+
+if [[ ! -x "$HELPER" ]]; then
+  show_error "Tunnel helper missing. Re-run the CyberBlue v2 installer."
+  exit 1
+fi
+
+gui_responds() {
+  # This only tests HTTPS responsiveness through the local tunnel.
+  # The browser still handles certificate validation separately.
+  curl --insecure --silent --connect-timeout 2 --max-time 4 \
+    --output /dev/null "$URL"
+}
+
+port_listening() {
+  ss -ltnH "( sport = :$PORT )" | grep -q .
+}
+
+if gui_responds; then
+  printf 'Existing GUI tunnel responding; reusing it.\n'
+else
+  if port_listening; then
+    show_error "Local port $PORT is already occupied, but the DFIR GUI isn't responding. Close the conflicting listener and try again."
+    exit 1
+  fi
+  printf 'No GUI tunnel detected; opening SSH authentication terminal...\n'
+  # The parent desktop process waits for SSH auth, then opens the browser.
+  # Avoid Terminal=true: that caused GUI/browser hand-off races on some desktops.
+  if command -v gnome-terminal >/dev/null 2>&1; then
+    gnome-terminal --wait -- "$HELPER" || { show_error 'SSH tunnel setup failed. See terminal output.'; exit 1; }
+  elif command -v xterm >/dev/null 2>&1; then
+    xterm -T 'CyberBlue — DFIR SSH Login' -e "$HELPER" || { show_error 'SSH tunnel setup failed. See terminal output.'; exit 1; }
+  elif command -v konsole >/dev/null 2>&1; then
+    konsole --nofork -e "$HELPER" || { show_error 'SSH tunnel setup failed. See terminal output.'; exit 1; }
+  else
+    show_error 'No supported terminal found (gnome-terminal, xterm, or konsole). Install gnome-terminal or ask for an alternate launcher.'
+    exit 1
+  fi
+fi
+
+ready=0
+for _ in $(seq 1 20); do
+  if gui_responds; then
+    ready=1
+    break
+  fi
+  sleep 0.5
+done
+if [[ "$ready" -ne 1 ]]; then
+  show_error 'SSH completed but the DFIR GUI did not respond. Confirm Velociraptor is running on DFIR-01.'
+  exit 1
+fi
+
+printf 'Tunnel ready. Opening %s with desktop browser session.\n' "$URL"
+if ! xdg-open "$URL"; then
+  show_error "The tunnel is ready, but the browser could not open. Manually browse to $URL."
+  exit 1
+fi
+printf '[%s] Browser handoff complete.\n' "$(date -Is)"

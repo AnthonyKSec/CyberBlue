@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Interactive SSH login helper; only the graphical launcher invokes this.
+set -u
+printf '\nCyberBlue Raptor — establishing SSH tunnel to DFIR-01\n'
+printf 'Enter your SSH password if prompted. Do not enter credentials into the web browser prompt.\n\n'
+ssh -fN -o ExitOnForwardFailure=yes -o ConnectTimeout=15 dfir-gui
+status=$?
+if [[ "$status" -ne 0 ]]; then
+  printf '\nSSH tunnel setup failed (exit code %s).\n' "$status" >&2
+  read -r -p 'Press Enter to close this window...' _unused || true
+fi
+exit "$status"
