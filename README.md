@@ -169,7 +169,7 @@ As additional modules are completed, this repository will expand into endpoint t
 | [Module 06 — Network Security Monitoring](modules/module-06-network-security-monitoring/README.md) | Passive Suricata monitoring, traffic mirroring, custom detection, rule tuning, Wazuh SIEM integration, and persistence validation | **BUILD COMPLETE ✓** |
 | [Module 07 — Network Forensics & Session Investigation](modules/module-07-network-forensics-session-investigation/README.md) | PCAP preservation, TShark/Zeek session reconstruction, multi-source correlation, HTTP object recovery, evidence-gap testing, live Zeek deployment, and lifecycle persistence | **BUILD COMPLETE ✓** |
 | [Module 08 — Vulnerability Management](modules/module-08-vulnerability-management/README.md) | Greenbone baseline, validated SSH remediation and rescan, authenticated Linux inventory, open kernel risk analysis, storage recovery, and mirror self-healing | **BUILD COMPLETE ✓** |
-| [Module 09 — Endpoint Forensics & Threat Hunting](modules/module-09-endpoint-forensics-threat-hunting/README.md) | Linux-Mint enrolled: process/network/account/persistence baselines; restricted Windows relay deployed; physical enrollment pending | **IN PROGRESS** |
+| [Module 09 — Endpoint Forensics & Threat Hunting](modules/module-09-endpoint-forensics-threat-hunting/README.md) | Linux + physical Windows enrollment; initial Windows process, network, service and scheduled-task investigations with VQL; controlled hunt/replay still open | **PHASE 1 VALIDATED — MODULE OPEN** |
 
 Modules 03–08 have completed their technical build gates. Deeper knowledge review and independent qualification remain tracked separately and will be revisited after the wider Cyber Forge range is built.
 
@@ -426,22 +426,22 @@ Module 08 has completed its **technical Build Gate** using Greenbone Community E
 
 ## Module 09 — Endpoint Forensics & Threat Hunting
 
-**IN PROGRESS — Linux-Mint forensic baseline validated, restricted management-network relay operational; physical Windows enrollment and full investigation still open.**
+**PHASE 1 MILESTONE VALIDATED (October 15 Central / October 16 UTC). Full technical Build Gate and independent qualification OPEN.** DFIR-01 and protected SSH GUI operating; Linux-Mint and RHINOTOUGH physical Windows clients enrolled. RHINOTOUGH: 187 process records; 85 network records; 286 services; 257 scheduled tasks. Initial VQL process lineage, 6 established connection attribution, 4 service-to-network correlations, and 15 scheduled-task candidate triage performed. No real incident or compromise-free finding claimed.
 
 ```text
-[✓] DFIR-01 restarted with evidence storage and Velociraptor running
-[✓] Linux-Mint agent installed and enrolled
-[✓] Linux processes (148 rows), connections (9 rows), users (50 rows)
-[✓] Cron (40 result rows), services (64 rows), timers (12)
-[✓] Windows laptop discovery and packet-path investigation
-[✓] Limited TCP relay: authorized RHINOTOUGH access, TLS 1.3 certificate identity
-[✓] Dedicated relay firewall and least-privilege systemd relay active/enabled
-[ ] Windows MSI enrollment and first forensic collection
-[ ] Managed relay post-reboot regression
-[ ] Controlled isolated VM108 hunting simulation, investigation and replay
+[✓] DFIR-01 evidence volume, Velociraptor, relay services and listeners validated
+[✓] Linux-Mint agent enrolled; Linux artifact baselines collected
+[✓] RHINOTOUGH Windows MSI built, inspected, SHA-256 matched after Remmina transfer
+[✓] RHINOTOUGH client enrolled and Connected in Velociraptor
+[✓] Process / network / service / scheduled-task collection and targeted VQL analysis
+[✓] Dual-entrypoint CyberBlue Raptor SSH GUI launcher validated and committed
+[ ] Registry startup (Run/RunOnce), deeper persistence and historical event evidence
+[ ] Managed relay reboot/fail-closed regression
+[ ] Controlled isolated hunt scenario, case report and reset/replay
+[ ] Module 09 full technical Build Gate / independent qualification
 ```
 
-[**Module 09 build documentation**](modules/module-09-endpoint-forensics-threat-hunting/README.md) · [**October 12 validated progress**](modules/module-09-endpoint-forensics-threat-hunting/STATUS-2026-10-12.md)
+[**Module 09 build journal**](modules/module-09-endpoint-forensics-threat-hunting/README.md) · [**October 15 Phase 1 validated field report**](modules/module-09-endpoint-forensics-threat-hunting/PROGRESS-2026-10-15.md) · [**Windows VQL workbook**](modules/module-09-endpoint-forensics-threat-hunting/VQL-WINDOWS-BASELINE.md) · [**Evidence manifest**](modules/module-09-endpoint-forensics-threat-hunting/EVIDENCE-2026-10-15.md)
 
 ---
 
@@ -521,8 +521,8 @@ Module 08 has completed its **technical Build Gate** using Greenbone Community E
 [✓] Module 08 technical Build Gate completed
 [✓] Cyber Forge 1 TB shared HDD configured and mounted
 [✓] DFIR-01 + Velociraptor server deployed and GUI verified
-[✓] Linux-Mint client package verified and staged (not installed)
-[ ] Module 09 agent enrollment and endpoint baseline
+[✓] Linux-Mint client installed and baseline validated
+[✓] Module 09 Linux + Windows client enrollment and initial endpoint baseline milestone
 [ ] Module 09 technical Build Gate
 ```
 

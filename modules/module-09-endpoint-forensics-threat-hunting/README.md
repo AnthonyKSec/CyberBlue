@@ -2,16 +2,16 @@
 
 ![CyberBlue Module 09 — Endpoint Forensics & Threat Hunting](assets/module-09-banner.webp)
 
-> **Status: IN PROGRESS — Linux endpoint enrolled and baseline collected; Windows physical endpoint enrollment pending**
+> **Status: PHASE 1 MILESTONE VALIDATED — Linux + physical Windows enrolled and baseline investigations recorded; full Module 09 qualification remains OPEN**
 >
 > **Implementation:** Velociraptor DFIR 0.77.3 on Proxmox VE 9.2.2 / Ubuntu Server 24.04.5 LTS
 >
 > **Historical October 11 checkpoint:** Linux-Mint agent `.deb` transferred and SHA-256 matched; all VMs gracefully stopped for the session. Agent **not yet installed or enrolled**.
 >
-> **Qualification:** Technical Build Gate **OPEN**. Linux-Mint baseline artifact collections are validated; physical Windows enrollment, controlled threat hunt, full investigation and replay are still pending.
+> **Qualification:** Technical Build Gate **OPEN**. Linux-Mint and RHINOTOUGH enrollment plus initial Windows baseline investigations are validated. Registry persistence, controlled threat hunt, formal case report, full recovery regression and replay are still open.
 
 
-> **Latest progress:** [October 12 validated Linux baseline and physical Windows relay](PROGRESS-2026-10-12.md) · [Evidence SHA-256 addendum](EVIDENCE-NEW-SHA256.txt). Screenshots and troubleshooting documentation are preserved there; Module 09 is **not** build-complete.
+> **Latest validated checkpoint (October 15 Central / October 16 UTC):** [Windows enrollment, artifact baselines and VQL investigations](PROGRESS-2026-10-15.md) · [VQL queries](VQL-WINDOWS-BASELINE.md) · [Evidence manifest](EVIDENCE-2026-10-15.md). **Phase 1 is a milestone, not full Module 09 qualification.** The older [October 12 checkpoint](PROGRESS-2026-10-12.md) and initial build journal below remain historical snapshots and may report tasks as pending that have now passed.
 
 ## Principle before platform
 
@@ -49,7 +49,7 @@ HOME MANAGEMENT LAN — vmbr0 / 192.168.12.0/24
               10.10.20.0/24
                     |
       Linux-Mint VM101 10.10.20.11
-     Debian client installer STAGED ONLY
+     Debian client enrolled after October 12; initial installation note historical
                     |
    ROUTER-01 10.10.20.1 / nftables segmentation
 
