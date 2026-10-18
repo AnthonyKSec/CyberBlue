@@ -2,16 +2,13 @@
 
 ![CyberBlue Module 09 — Endpoint Forensics & Threat Hunting](assets/module-09-banner.webp)
 
-> **Status: PHASE 1 MILESTONE VALIDATED — Linux + physical Windows enrolled and baseline investigations recorded; full Module 09 qualification remains OPEN**
+> **Status: Phase 1 validated; Windows persistence/RDP investigation and scheduled-task telemetry repair validated on October 17/18. Full Module 09 qualification remains OPEN.**
 >
-> **Implementation:** Velociraptor DFIR 0.77.3 on Proxmox VE 9.2.2 / Ubuntu Server 24.04.5 LTS
+> **Implementation:** Velociraptor DFIR 0.77.3 on Proxmox VE 9.2.2 / Ubuntu Server 24.04.5 LTS.
 >
-> **Historical October 11 checkpoint:** Linux-Mint agent `.deb` transferred and SHA-256 matched; all VMs gracefully stopped for the session. Agent **not yet installed or enrolled**.
+> **Latest validated checkpoint:** [October 17/18 Windows investigation and detection coverage repair](PROGRESS-2026-10-17.md) · [Windows events VQL workbook](VQL-WINDOWS-EVENTS-2026-10-17.md) · [October 15 baseline](PROGRESS-2026-10-15.md) · [October 15 screenshot evidence](EVIDENCE-2026-10-15.md).
 >
-> **Qualification:** Technical Build Gate **OPEN**. Linux-Mint and RHINOTOUGH enrollment plus initial Windows baseline investigations are validated. Registry persistence, controlled threat hunt, formal case report, full recovery regression and replay are still open.
-
-
-> **Latest validated checkpoint (October 15 Central / October 16 UTC):** [Windows enrollment, artifact baselines and VQL investigations](PROGRESS-2026-10-15.md) · [VQL queries](VQL-WINDOWS-BASELINE.md) · [Evidence manifest](EVIDENCE-2026-10-15.md). **Phase 1 is a milestone, not full Module 09 qualification.** The older [October 12 checkpoint](PROGRESS-2026-10-12.md) and initial build journal below remain historical snapshots and may report tasks as pending that have now passed.
+> **Qualification:** Windows + Linux clients and foundational artifact baselines PASS. Startup Run/Startup-folder triage, RDP source IP correlation, and targeted Task Scheduler Operational log recovery/Velociraptor collection PASS. Executable signatures, complete persistence and service-creation validation, Security task audit policy, isolated controlled hunt, formal report, infrastructure recovery and replay remain OPEN. Historical October 11/12 notes below remain preserved as historical snapshots; their status lines are not current.
 
 ## Principle before platform
 

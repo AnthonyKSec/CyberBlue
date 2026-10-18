@@ -169,7 +169,7 @@ As additional modules are completed, this repository will expand into endpoint t
 | [Module 06 — Network Security Monitoring](modules/module-06-network-security-monitoring/README.md) | Passive Suricata monitoring, traffic mirroring, custom detection, rule tuning, Wazuh SIEM integration, and persistence validation | **BUILD COMPLETE ✓** |
 | [Module 07 — Network Forensics & Session Investigation](modules/module-07-network-forensics-session-investigation/README.md) | PCAP preservation, TShark/Zeek session reconstruction, multi-source correlation, HTTP object recovery, evidence-gap testing, live Zeek deployment, and lifecycle persistence | **BUILD COMPLETE ✓** |
 | [Module 08 — Vulnerability Management](modules/module-08-vulnerability-management/README.md) | Greenbone baseline, validated SSH remediation and rescan, authenticated Linux inventory, open kernel risk analysis, storage recovery, and mirror self-healing | **BUILD COMPLETE ✓** |
-| [Module 09 — Endpoint Forensics & Threat Hunting](modules/module-09-endpoint-forensics-threat-hunting/README.md) | Linux + physical Windows enrollment; initial Windows process, network, service and scheduled-task investigations with VQL; controlled hunt/replay still open | **PHASE 1 VALIDATED — MODULE OPEN** |
+| [Module 09 — Endpoint Forensics & Threat Hunting](modules/module-09-endpoint-forensics-threat-hunting/README.md) | Linux/Windows baseline; startup persistence triage; RDP cross-source correlation; controlled Task Scheduler detection-gap repair and telemetry replay | **CHECKPOINTS VALIDATED — MODULE OPEN** |
 
 Modules 03–08 have completed their technical build gates. Deeper knowledge review and independent qualification remain tracked separately and will be revisited after the wider Cyber Forge range is built.
 
@@ -426,22 +426,24 @@ Module 08 has completed its **technical Build Gate** using Greenbone Community E
 
 ## Module 09 — Endpoint Forensics & Threat Hunting
 
-**PHASE 1 MILESTONE VALIDATED (October 15 Central / October 16 UTC). Full technical Build Gate and independent qualification OPEN.** DFIR-01 and protected SSH GUI operating; Linux-Mint and RHINOTOUGH physical Windows clients enrolled. RHINOTOUGH: 187 process records; 85 network records; 286 services; 257 scheduled tasks. Initial VQL process lineage, 6 established connection attribution, 4 service-to-network correlations, and 15 scheduled-task candidate triage performed. No real incident or compromise-free finding claimed.
+**PHASE 1 BASELINE + OCTOBER 17/18 ENDPOINT TELEMETRY CHECKPOINTS VALIDATED. Full technical Build Gate and independent qualification remain OPEN.** Velociraptor 0.77.3 collects Linux and physical Windows endpoint evidence. Initial RHINOTOUGH baselines: 187 processes, 85 network records, 286 services and 257 configured tasks. Later investigations confirmed 38 startup records (32 disabled, 6 classified enable), 264 RDP-related event records, and a scheduled-task logging gap corrected and validated by eight controlled test events collected in Velociraptor.
 
 ```text
-[✓] DFIR-01 evidence volume, Velociraptor, relay services and listeners validated
-[✓] Linux-Mint agent enrolled; Linux artifact baselines collected
-[✓] RHINOTOUGH Windows MSI built, inspected, SHA-256 matched after Remmina transfer
-[✓] RHINOTOUGH client enrolled and Connected in Velociraptor
-[✓] Process / network / service / scheduled-task collection and targeted VQL analysis
-[✓] Dual-entrypoint CyberBlue Raptor SSH GUI launcher validated and committed
-[ ] Registry startup (Run/RunOnce), deeper persistence and historical event evidence
-[ ] Managed relay reboot/fail-closed regression
-[ ] Controlled isolated hunt scenario, case report and reset/replay
-[ ] Module 09 full technical Build Gate / independent qualification
+[✓] DFIR-01 storage, Velociraptor, restricted relay and SSH GUI validated
+[✓] Linux Mint and RHINOTOUGH physical Windows endpoint enrollment
+[✓] Process / network / service / scheduled-task baseline collection and VQL triage
+[✓] Windows startup registry and Startup-folder inventory (initial classification)
+[✓] RDP source-address correlation: network + TermService + EventLogs
+[✓] Task Scheduler Operational logging restored (0 → 53 result rows)
+[✓] Controlled benign task: registration, execution, completion and VQL timeline
+[✓] Temporary test task absent from current task inventory; deletion cause unknown
+[ ] Application executable signing/authorization validation; broader event coverage
+[ ] Service-creation event review and formal comprehensive case report
+[ ] Controlled isolated hunt scenario; case report and repeatable reset/replay
+[ ] DFIR platform reboot / failure-mode regression; full Module 09 qualification
 ```
 
-[**Module 09 build journal**](modules/module-09-endpoint-forensics-threat-hunting/README.md) · [**October 15 Phase 1 validated field report**](modules/module-09-endpoint-forensics-threat-hunting/PROGRESS-2026-10-15.md) · [**Windows VQL workbook**](modules/module-09-endpoint-forensics-threat-hunting/VQL-WINDOWS-BASELINE.md) · [**Evidence manifest**](modules/module-09-endpoint-forensics-threat-hunting/EVIDENCE-2026-10-15.md)
+[**Module 09 documentation**](modules/module-09-endpoint-forensics-threat-hunting/README.md) · [**October 17/18 investigation and remediation**](modules/module-09-endpoint-forensics-threat-hunting/PROGRESS-2026-10-17.md) · [**Windows event VQL workbook**](modules/module-09-endpoint-forensics-threat-hunting/VQL-WINDOWS-EVENTS-2026-10-17.md) · [**October 15 baseline**](modules/module-09-endpoint-forensics-threat-hunting/PROGRESS-2026-10-15.md) · [**October 15 screenshots**](modules/module-09-endpoint-forensics-threat-hunting/EVIDENCE-2026-10-15.md)
 
 ---
 
