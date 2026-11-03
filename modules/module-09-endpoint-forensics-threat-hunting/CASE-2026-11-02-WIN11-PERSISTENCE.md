@@ -81,3 +81,17 @@ WIN11-01 Administrator PowerShell computed these SHA-256 digests against the **t
 ### Evidence handling note
 
 The user's screenshots and local preserved evidence were reviewed interactively during the training session. **Their raw binaries, screenshots, logs, private MSI, and credential-bearing Velociraptor configuration have not been added to this Git commit.** This report is a sanitized record of observations, not a claim that GitHub currently hosts the original forensic files.
+
+
+## 6. Session closeout — installation media and outstanding work
+
+**Operator checkpoint:** November 2, 2026 evening US Central / November 3 UTC; screenshots reviewed during the session.
+
+- VM102 `WIN11-01` Proxmox Hardware showed CD/DVD `ide2` set to `none,media=cdrom`, with `ide0` still holding the VirtIO ISO and `scsi0` unchanged.
+- Proxmox `cyberforge-hdd (pve) → ISO Images` displayed an empty image list after removal of `CyberBlue-M09-Velociraptor.iso`. **PASS for this storage's installation-media cleanup.** This does not establish the absence of any other copies on RhinoRecon or other storage.
+- After forensic cleanup, a *new* remote `Windows.Sys.StartupItems` collection did not show `Run\CyberBlueM09PersistenceTest`; residual `RunNotification\StartupTNotiCyberBlueM09PersistenceTest` metadata remained and was deliberately not removed.
+- The three locally saved evidence files were SHA-256 fingerprinted (see Section 3A). Local RhinoRecon Git checkout was fast-forwarded to commit `505e87c` before this closeout update. Untracked `Modules/`, `build-notes.md`, and `screenshots/` were **not** deleted, modified, or committed.
+- **Not yet qualified:** Stable Windows profile and genuine sign-in execution; Sysmon registry events 12–14 coverage; recovery/reset and replay; any needed independent raw-evidence export; and confirmation that DFIR-01 was rebooted before its correct route/service status was observed. Router nftables reboot persistence was verified.
+- **Private distribution material:** Velociraptor MSI and ISO were created in `~/Downloads` on RhinoRecon. Their removal on RhinoRecon was **not verified** by the Proxmox screenshot and requires separate private cleanup after verifying the filenames.
+
+**Assessment:** Module 09 benign persistence *investigation* and cleanup pass; **full Module 09 qualification remains OPEN.**
