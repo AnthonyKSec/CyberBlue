@@ -2,11 +2,11 @@
 
 ![CyberBlue Module 09 — Endpoint Forensics & Threat Hunting](assets/module-09-banner.webp)
 
-> **Status: Phase 1 validated; Windows persistence/RDP investigation and scheduled-task telemetry repair validated on October 17/18. Full Module 09 qualification remains OPEN.**
+> **Status: Phase 1 and October 17/18 investigation validated; WIN11-01 controlled persistence discovery, Sysmon process correlation and cleanup validated November 2/3. Full Module 09 qualification remains OPEN.**
 >
 > **Implementation:** Velociraptor DFIR 0.77.3 on Proxmox VE 9.2.2 / Ubuntu Server 24.04.5 LTS.
 >
-> **Latest validated checkpoint:** [October 17/18 Windows investigation and detection coverage repair](PROGRESS-2026-10-17.md) · [Windows events VQL workbook](VQL-WINDOWS-EVENTS-2026-10-17.md) · [October 15 baseline](PROGRESS-2026-10-15.md) · [October 15 screenshot evidence](EVIDENCE-2026-10-15.md).
+> **Latest validated checkpoint:** [November 2/3 WIN11-01 controlled persistence case](CASE-2026-11-02-WIN11-PERSISTENCE.md) · [October 17/18 Windows investigation and detection coverage repair](PROGRESS-2026-10-17.md) · [Windows events VQL workbook](VQL-WINDOWS-EVENTS-2026-10-17.md) · [October 15 baseline](PROGRESS-2026-10-15.md) · [October 15 screenshot evidence](EVIDENCE-2026-10-15.md).
 >
 > **Qualification:** Windows + Linux clients and foundational artifact baselines PASS. Startup Run/Startup-folder triage, RDP source IP correlation, and targeted Task Scheduler Operational log recovery/Velociraptor collection PASS. Executable signatures, complete persistence and service-creation validation, Security task audit policy, isolated controlled hunt, formal report, infrastructure recovery and replay remain OPEN. Historical October 11/12 notes below remain preserved as historical snapshots; their status lines are not current.
 
